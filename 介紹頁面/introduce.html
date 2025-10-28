@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartLearn - 階段式學習平台</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Microsoft JhengHei", sans-serif;
+        background: #2563eb; /* 主藍 */
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* 禁止出現滾動條 */
+      }
+
+      /* 背景動畫元素 */
+      .bg-elements {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 0;
+      }
+      .floating-shape {
+        position: absolute;
+        opacity: 0.1;
+        animation: float 6s ease-in-out infinite;
+      }
+      .shape-1 {
+        width: 80px;
+        height: 80px;
+        background: #ff6b6b;
+        border-radius: 20px;
+        top: 20%;
+        left: 10%;
+        animation-delay: 0s;
+      }
+      .shape-2 {
+        width: 60px;
+        height: 60px;
+        background: #4ecdc4;
+        border-radius: 50%;
+        top: 60%;
+        right: 15%;
+        animation-delay: 2s;
+      }
+      .shape-3 {
+        width: 100px;
+        height: 100px;
+        background: #45b7d1;
+        border-radius: 15px;
+        top: 40%;
+        left: 80%;
+        animation-delay: 4s;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0) rotate(0);
+        }
+        50% {
+          transform: translateY(-20px) rotate(10deg);
+        }
+      }
+
+      /* 導航欄 */
+      nav {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 40px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        color: #fff;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .login-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        padding: 12px 24px;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: 0.3s;
+        font-size: 16px;
+        backdrop-filter: blur(10px);
+      }
+      .login-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      /* 主要內容 */
+      .main-content {
+        position: relative;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 60px 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .content-left {
+        flex: 1;
+        padding-right: 60px;
+      }
+      .main-title {
+        color: #fff;
+        font-size: 48px;
+        font-weight: 700;
+        margin-bottom: 30px;
+        line-height: 1.2;
+      }
+      .subtitle {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 18px;
+        line-height: 1.6;
+        margin-bottom: 40px;
+      }
+
+      .features {
+        margin-bottom: 25px;
+      }
+      .feature-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 16px;
+      }
+      .feature-icon {
+        width: 24px;
+        height: 24px;
+        background: #fff;
+        border-radius: 50%;
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #2563eb;
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .cta-button {
+        background: #fff;
+        color: #2563eb;
+        border: 2px solid #fff;
+        padding: 12px 24px; /* ✅ 按鈕縮小 */
+        border-radius: 30px;
+        font-size: 16px; /* ✅ 字體縮小 */
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.3s;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+      .cta-button:hover {
+        background: #f0f0f0;
+        color: #2563eb;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      }
+      .content-right {
+        flex: 1;
+        position: relative;
+      }
+
+      /* ===== 新版：主頁風格的預覽卡 ===== */
+      .app-preview {
+        max-width: 500px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, #aea2c6, #2125fc); /* 保留紫色系 */
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        color: #fff;
+      }
+      /* header */
+      .mini-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .mini-brand {
+        font-weight: 700;
+        opacity: 0.95;
+      }
+      .mini-status {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #f8f9fa;
+      }
+
+      /* 進度條（對應主頁猴子進度條） */
+      .progress-bar {
+        height: 12px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        background: #22c55e;
+        border-radius: 8px;
+        width: 0%;
+        transition: width 0.5s ease-in-out;
+      }
+
+      /* 類日曆/卡片格 */
+      .mini-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      .card {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        aspect-ratio: 1 / 1;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+      }
+
+      /* 裝飾元素 */
+      .decorative-elements {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      .deco-circle {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        animation: pulse 4s ease-in-out infinite;
+      }
+      .deco-1 {
+        width: 200px;
+        height: 200px;
+        top: 10%;
+        right: 20%;
+        animation-delay: 0s;
+      }
+      .deco-2 {
+        width: 150px;
+        height: 150px;
+        bottom: 20%;
+        left: 10%;
+        animation-delay: 2s;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.2;
+          transform: scale(1.1);
+        }
+      }
+
+      /* 響應式 */
+      @media (max-width: 768px) {
+        nav {
+          padding: 15px 20px;
+        }
+        .main-content {
+          flex-direction: column;
+          padding: 40px 20px;
+          text-align: center;
+        }
+        .content-left {
+          padding-right: 0;
+          margin-bottom: 40px;
+        }
+        .main-title {
+          font-size: 36px;
+        }
+        .subtitle {
+          font-size: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 背景裝飾元素 -->
+    <div class="bg-elements">
+      <div class="floating-shape shape-1"></div>
+      <div class="floating-shape shape-2"></div>
+      <div class="floating-shape shape-3"></div>
+    </div>
+
+    <!-- 導航欄 -->
+    <nav>
+      <div class="logo">SmartLearn</div>
+      <button class="login-btn" onclick="location.href='/login_ui'">
+        登入/註冊
+      </button>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="main-content">
+      <div class="content-left">
+        <h1 class="main-title">智慧學習的最佳選擇</h1>
+        <p class="subtitle">
+          SmartLearn
+          是一個重點現代學習實踐的智慧化學習規劃平台。結合了階段式日課體驗，讓您用「學習共學分享」與「互動式日特圖排程工具」幫助您有效規劃、追蹤並完成每一個學習目標。
+        </p>
+
+        <div class="features">
+          <div class="feature-item">
+            <div class="feature-icon">✓</div>
+            階段式學習路徑 - 將大目標拆分為清晰的階段，追蹤視覺化卡片追蹤進度
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">✓</div>
+            向好友分享與共學 - 加入好友，與夥伴一起討論、互相激勵
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">✓</div>
+            互動式日特圖排程 - 專業的日特圖排程工具，一目瞭然地規劃學習任務
+          </div>
+        </div>
+
+        <button class="cta-button" onclick="location.href='/login_ui'">
+          開始學習之旅
+        </button>
+      </div>
+
+      <div class="content-right">
+        <!-- 新版預覽卡：主頁風格 -->
+        <div class="app-preview">
+          <div class="mini-header">
+            <div class="mini-brand">SmartLearn</div>
+            <div class="mini-status"></div>
+          </div>
+
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+
+          <div class="mini-grid">
+            <div class="card"></div>
+            <div class="card"></div>
+            <div class="card"></div>
+            <div class="card"></div>
+            <div class="card"></div>
+            <div class="card"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="/介紹頁面/introduce.js"></script>
+  </body>
+</html>

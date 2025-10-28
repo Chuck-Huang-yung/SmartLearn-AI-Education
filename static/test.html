@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>成績趨勢圖</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script> 
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    canvas { max-width: 100%; }
+    .form {
+      margin-top: 20px;
+    }
+    input, button {
+      margin: 5px;
+      padding: 5px 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>學習測驗成績圖表</h2>
+  <canvas id="scoreChart" width="600" height="300"></canvas>
+
+  <!--
+  <div class="form">
+    <input type="text" id="week" placeholder="讀取中..." />
+    <input type="number" id="score" placeholder="分數（0~100）" max="100">
+    <button onclick="addScore()">新增成績</button>
+  </div>
+  -->
+
+  <script src="/static/config.js"></script>
+  <script>
+    const API_BASE_DEFAULT = API_BASE;
+    const urlParams = new URLSearchParams(window.location.search);
+    const API_BASE_PARAM = urlParams.get("api_base");
+    let apiBaseFinal = API_BASE_PARAM || API_BASE_DEFAULT;
+    //
+    let chart;
+
+    // 讀取成績資料
+    async function fetchScores() {
+      const res = await fetch(`${apiBaseFinal}/scores`);
+      //console.log("HTTP status =", res.status);
+      const text = await res.text();
+      //console.log("API raw response =", text);
+
+      try {
+        const data = JSON.parse(text);
+        return data.data;
+      } catch (err) {
+        console.error("回應不是 JSON，無法解析：", err);
+        return [];
+      }
+    }
+
+    // 根據最新週數更新輸入框提示
+    /*
+    function updateWeekPlaceholder(scores) {
+      const lastWeek = scores.length ? scores[scores.length - 1].week : "第0週";
+      const match = lastWeek.match(/第(\d+)週/);
+      const nextWeek = match ? parseInt(match[1]) + 1 : 1;
+
+      const weekInput = document.getElementById("week");
+      weekInput.value = "";
+      weekInput.placeholder = `例如：第${nextWeek}週 或 ${nextWeek}`;
+    }
+    */
+
+    // 畫出圖表
+    async function renderChart() {
+      //console.log("API_BASE =", API_BASE);
+      const scores = await fetchScores();
+      //console.log("scores from API =", scores);
+      const labels = scores.map(s => s.week);
+      const values = scores.map(s => s.score);
+
+    //  updateWeekPlaceholder(scores);
+
+      const ctx = document.getElementById("scoreChart").getContext("2d");
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '成績',
+            data: values,
+            borderColor: '#4CAF50',
+            backgroundColor: '#4CAF50',
+            fill: false,
+            tension: 0.2,
+            pointBackgroundColor: '#4CAF50'
+          }]
+        },
+        options: {
+          plugins: {
+            datalabels: {
+              color: '#000',
+              font: { weight: 'bold' },
+              align: 'top',
+              formatter: value => value
+            },
+            legend: {
+              labels: {
+                usePointStyle: true,
+                pointStyle: 'rect'
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: '週次'
+              }
+            },
+            y: {
+              min: 0,
+              max: 100,
+              title: {
+                display: true,
+                text: '分數'
+              }
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    }
+
+    // 新增一筆成績
+    /*
+    async function addScore() {
+      const weekInput = document.getElementById("week");
+      const scoreInput = document.getElementById("score");
+
+      const rawWeek = weekInput.value.trim();
+      const score = parseInt(scoreInput.value);
+
+      if (!rawWeek || isNaN(score)) {
+        alert("請輸入正確的週次與分數");
+        return;
+      }
+
+      const match = rawWeek.match(/(\d+)/);
+      if (!match) {
+        alert("週次格式錯誤，請輸入數字或『第X週』");
+        return;
+      }
+
+       const inputWeek = parseInt(match[1]);
+
+      // 取得最新週次（例如資料已有第16週，下一週是第17週）
+      const scores = await fetchScores();
+      const lastWeek = scores.length ? scores[scores.length - 1].week : "第0週";
+      const lastWeekMatch = lastWeek.match(/第(\d+)週/);
+      const nextWeek = lastWeekMatch ? parseInt(lastWeekMatch[1]) + 1 : 1;
+
+      // 防呆：只能輸入「下一週」，不能輸入過去週數
+      if (inputWeek < nextWeek) {
+        alert(`請輸入最新週次：第${nextWeek}週`);
+        return;
+      }
+      if (inputWeek > nextWeek) {
+        alert(`請依照順序輸入，不可跳過週次（目前應為第${nextWeek}週）`);
+        return;
+      }
+      
+      const formattedWeek = `第${parseInt(match[1])}週`;
+
+      await fetch(`${apiBaseFinal}/add_score`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ week: formattedWeek, score })
+      });
+
+      scoreInput.value = "";
+      await renderChart(); 
+    }
+     */
+    // 初始畫面
+    renderChart();
+  </script>
+</body>
+</html>

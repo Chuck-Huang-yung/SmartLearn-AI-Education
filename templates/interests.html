@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartLearn - 選擇學習興趣</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      @keyframes float {
+        0% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-12px);
+        }
+        100% {
+          transform: translateY(0px);
+        }
+      }
+      .bubble {
+        animation: float 4.5s ease-in-out infinite;
+        transition: transform 0.15s ease, box-shadow 0.15s ease,
+          background-color 0.15s ease, border-color 0.15s ease;
+        user-select: none;
+        will-change: transform;
+        background-color: #fff;
+        border: 1px solid #e5e7eb;
+      }
+      .bubble:hover {
+        transform: translateY(-4px) scale(1.03);
+      }
+      .bubble.selected {
+        background-color: rgb(219 234 254);
+        border-color: rgb(147 197 253);
+        outline: 2px solid rgb(37 99 235);
+        box-shadow: 0 10px 18px rgba(37, 99, 235, 0.25);
+      }
+      .shake {
+        animation: shake 0.35s ease both;
+      }
+      @keyframes shake {
+        10%,
+        90% {
+          transform: translateX(-1px);
+        }
+        20%,
+        80% {
+          transform: translateX(2px);
+        }
+        30%,
+        50%,
+        70% {
+          transform: translateX(-4px);
+        }
+        40%,
+        60% {
+          transform: translateX(4px);
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <!-- 頂部導覽 -->
+    <header class="bg-white/80 backdrop-blur border-b">
+      <div
+        class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-blue-600"></div>
+          <span class="text-lg font-semibold">SmartLearn</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div id="topName" class="text-sm text-gray-600"></div>
+          <div
+            class="w-8 h-8 rounded-full overflow-hidden bg-blue-500 text-white flex items-center justify-center text-sm"
+            id="topAvatar"
+          >
+            <span id="topInitial">U</span>
+            <img
+              id="topImg"
+              class="hidden w-full h-full object-cover"
+              alt="avatar"
+            />
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-10">
+      <div class="max-w-3xl">
+        <h1 class="text-3xl font-bold text-gray-900">選擇您的學習興趣</h1>
+        <p class="text-gray-600 mt-2">
+          點選最多
+          <span class="font-semibold text-blue-700">3</span>
+          個。這會幫助我們客製您的課程與推薦內容。
+        </p>
+      </div>
+
+      <div class="mt-6 flex items-center justify-between max-w-3xl">
+        <div class="text-sm text-gray-600">
+          已選擇：<span id="count" class="font-semibold text-gray-900">0</span>
+          / 3
+        </div>
+        <button id="clearBtn" class="text-sm text-gray-500 hover:text-gray-700">
+          清除全部
+        </button>
+      </div>
+
+      <section id="categories" class="mt-6 space-y-10"></section>
+
+      <div class="h-24"></div>
+      <div
+        class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur border-t"
+      >
+        <div
+          class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between"
+        >
+          <div class="text-sm text-gray-600">
+            您可以稍後在「偏好設定」修改這些興趣。
+          </div>
+          <div class="flex items-center gap-3">
+            <button
+              id="skipBtn"
+              class="px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100"
+            >
+              先略過
+            </button>
+            <button
+              id="doneBtn"
+              class="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled
+            >
+              完成設定
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // ===== 常數 =====
+      const MAIN_PAGE = "/main_ui";
+      const UPDATE_TAGS_API = "/update_tags"; // ✅ 新增這行
+
+      // ====== 右上角帳號顯示 ======
+      (function loadProfile() {
+        const raw = localStorage.getItem("smartlearn_profile");
+        if (!raw) return;
+        try {
+          const profile = JSON.parse(raw);
+          document.getElementById("topName").textContent = `哈囉, ${
+            profile.name || "使用者"
+          }`;
+          const topInitial = document.getElementById("topInitial");
+          const topImg = document.getElementById("topImg");
+
+          if (profile.avatar) {
+            topImg.src = profile.avatar;
+            topImg.classList.remove("hidden");
+            topInitial.classList.add("hidden");
+          } else {
+            topInitial.textContent = (
+              profile.name?.trim()?.[0] || "U"
+            ).toUpperCase();
+            topInitial.classList.remove("hidden");
+            topImg.classList.add("hidden");
+          }
+        } catch (e) {
+          console.error("載入頭像錯誤", e);
+        }
+      })();
+
+      // ====== 興趣（含分類） ======
+      const INTERESTS = [
+        { name: "程式設計", cat: "理工 / STEM" },
+        { name: "AI / 資料科學", cat: "理工 / STEM" },
+        { name: "數學", cat: "理工 / STEM" },
+        { name: "物理", cat: "理工 / STEM" },
+        { name: "化學", cat: "理工 / STEM" },
+        { name: "生物", cat: "理工 / STEM" },
+        { name: "英文", cat: "語言" },
+        { name: "日文", cat: "語言" },
+        { name: "韓文", cat: "語言" },
+        { name: "歷史", cat: "社會 / 人文" },
+        { name: "地理", cat: "社會 / 人文" },
+        { name: "公民", cat: "社會 / 人文" },
+        { name: "心理學", cat: "社會 / 人文" },
+        { name: "語言學", cat: "社會 / 人文" },
+        { name: "文學", cat: "社會 / 人文" },
+        { name: "藝術", cat: "藝術 / 設計" },
+        { name: "音樂", cat: "藝術 / 設計" },
+        { name: "設計", cat: "藝術 / 設計" },
+        { name: "攝影", cat: "藝術 / 設計" },
+        { name: "繪圖 / 插畫", cat: "藝術 / 設計" },
+        { name: "影像剪輯", cat: "藝術 / 設計" },
+        { name: "商業 / 管理", cat: "商管 / 財金" },
+        { name: "財金 / 投資", cat: "商管 / 財金" },
+        { name: "行銷", cat: "商管 / 財金" },
+        { name: "經濟學", cat: "商管 / 財金" },
+        { name: "寫作", cat: "商管 / 財金" },
+        { name: "法律入門", cat: "商管 / 財金" },
+        { name: "體育 / 健身", cat: "生活 / 健康" },
+        { name: "醫學入門", cat: "生活 / 健康" },
+        { name: "烹飪 / 烘焙", cat: "生活 / 健康" },
+      ];
+
+      const CAT_ORDER = [
+        "理工 / STEM",
+        "語言",
+        "社會 / 人文",
+        "藝術 / 設計",
+        "商管 / 財金",
+        "生活 / 健康",
+      ];
+
+      const categoriesEl = document.getElementById("categories");
+      const countEl = document.getElementById("count");
+      const doneBtn = document.getElementById("doneBtn");
+      const clearBtn = document.getElementById("clearBtn");
+      const skipBtn = document.getElementById("skipBtn");
+
+      let selected = new Set();
+
+      function rand(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      function bubbleHTML(name) {
+        const offsetY = Math.round(rand(-12, 12));
+        const delay = rand(0, 2).toFixed(2) + "s";
+        const dur = rand(3.6, 5.6).toFixed(2) + "s";
+        return `
+        <div class="bubble-wrapper" style="transform: translateY(${offsetY}px);">
+          <button type="button"
+            class="bubble group relative w-full text-left rounded-2xl px-5 py-5
+                   shadow-sm hover:shadow-md focus:outline-none
+                   focus-visible:ring-2 focus-visible:ring-blue-500"
+            style="animation-duration:${dur}; animation-delay:${delay}"
+            data-name="${name}">
+            <div class="flex items-center gap-3">
+              <div class="shrink-0 w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" class="w-5 h-5 text-blue-700 opacity-70">
+                  <path fill="currentColor" d="M12 2a10 10 0 100 20 10 10 0 000-20Zm1 14.93V18h-2v-1.07a6.5 6.5 0 01-3.94-2.08l1.42-1.42A4.5 4.5 0 0011 14h2a4.5 4.5 0 003.52-1.57l1.42 1.42A6.5 6.5 0 0113 16.93ZM12 6a3 3 0 110 6 3 3 0 010-6Z"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <div class="text-base font-semibold text-gray-900">${name}</div>
+                <div class="text-sm text-gray-500">點一下選取 / 取消</div>
+              </div>
+              <div class="rounded-full px-2 py-0.5 text-xs bg-blue-50 text-gray-700 opacity-0 group-[.selected]:opacity-100 transition">
+                已選
+              </div>
+            </div>
+          </button>
+        </div>
+      `;
+      }
+
+      function renderCategory(title, items) {
+        return `
+        <section class="category-block">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-gray-700 tracking-wide">${title}</h2>
+            <div class="h-px flex-1 ml-4 bg-gray-200"></div>
+          </div>
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            ${items.map((i) => bubbleHTML(i.name)).join("")}
+          </div>
+        </section>
+      `;
+      }
+
+      function renderAll() {
+        const grouped = CAT_ORDER.map((cat) => ({
+          cat,
+          items: INTERESTS.filter((i) => i.cat === cat),
+        })).filter((g) => g.items.length);
+
+        categoriesEl.innerHTML = grouped
+          .map((g) => renderCategory(g.cat, g.items))
+          .join("");
+
+        categoriesEl.querySelectorAll(".bubble").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const name = btn.dataset.name;
+            const isSelected = selected.has(name);
+            if (!isSelected && selected.size >= 3) {
+              btn.classList.remove("shake");
+              void btn.offsetWidth;
+              btn.classList.add("shake");
+              return;
+            }
+            if (isSelected) {
+              selected.delete(name);
+              btn.classList.remove("selected");
+            } else {
+              selected.add(name);
+              btn.classList.add("selected");
+            }
+            updateCountUI();
+          });
+        });
+      }
+
+      function updateCountUI() {
+        countEl.textContent = selected.size;
+        doneBtn.disabled = selected.size === 0;
+      }
+
+      clearBtn.addEventListener("click", () => {
+        selected.clear();
+        categoriesEl
+          .querySelectorAll(".bubble")
+          .forEach((b) => b.classList.remove("selected", "shake"));
+        updateCountUI();
+      });
+
+      skipBtn.addEventListener("click", () => {
+        localStorage.setItem(
+          "smartlearn_interests",
+          JSON.stringify({ interests: [], createdAt: new Date().toISOString() })
+        );
+        window.location.href = "../main_ui";
+      });
+
+      doneBtn.addEventListener("click", async () => {
+        // 先嘗試多種來源
+        let uid = null;
+        let currentUser = null;
+
+        try {
+          const storedProfile = localStorage.getItem("smartlearn_profile");
+          if (storedProfile) {
+            const profile = JSON.parse(storedProfile);
+            uid = profile.uid || null;
+            currentUser = profile.currentUser || null;
+          }
+
+          // 註冊時留下的暫存資料
+          if (!uid) uid = localStorage.getItem("signup_uid");
+          if (!currentUser)
+            currentUser = localStorage.getItem("signup_currentUser");
+        } catch (e) {
+          console.warn("⚠️ 無法解析使用者資料", e);
+        }
+
+        if (!uid) {
+          alert("⚠️ 找不到使用者 UID，請重新登入。");
+          window.location.href = "/login_ui";
+          return;
+        }
+
+        const interests = Array.from(selected);
+
+        try {
+          const res = await fetch("/update_tags", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              uid: uid, // ✅ 必帶
+              tags: interests, // ✅ 使用者選的興趣
+            }),
+          });
+
+          const data = await res.json();
+          if (data.success) {
+            alert("興趣標籤已更新！");
+            // 可同步更新 localStorage
+            localStorage.setItem(
+              "smartlearn_interests",
+              JSON.stringify({
+                uid: uid,
+                tags: interests,
+                updatedAt: new Date().toISOString(),
+              })
+            );
+            window.location.href = "/main_ui";
+          } else {
+            alert("更新失敗，請稍後再試");
+          }
+        } catch (err) {
+          console.error("更新失敗", err);
+          alert("伺服器錯誤，請稍後再試");
+        }
+      });
+
+      renderAll();
+      updateCountUI();
+    </script>
+  </body>
+</html>

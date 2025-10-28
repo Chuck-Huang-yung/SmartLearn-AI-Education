@@ -1,0 +1,84 @@
+{
+  "users": [
+    {
+      "uid": "1001",
+      "name": "小明",
+      "status": "online",
+      "avatar": "👦",
+      "statusText": "線上",
+      "bio": ""
+    },
+    {
+      "uid": "1002",
+      "name": "小美",
+      "status": "online",
+      "avatar": "👧",
+      "statusText": "線上",
+      "bio": "正在學習日文"
+    },
+    {
+      "uid": "1003",
+      "name": "阿華",
+      "status": "offline",
+      "avatar": "🧑",
+      "statusText": "離線",
+      "bio": "數學苦手要加油！"
+    },
+    {
+      "uid": "1004",
+      "name": "小花",
+      "status": "online",
+      "avatar": "👩",
+      "statusText": "線上",
+      "bio": "愛畫畫，準備考設計系"
+    },
+    {
+      "uid": "1005",
+      "name": "大雄",
+      "status": "offline",
+      "avatar": "👨",
+      "statusText": "離線",
+      "bio": "希望下次考試能進步 20 分"
+    },
+    {
+      "uid": "1006",
+      "name": "藤也",
+      "status": "online",
+      "avatar": "/static/bot2.jpg",
+      "statusText": "線上",
+      "bio": "我很棒！"
+    },
+    {
+      "uid": "1007",
+      "name": "朱珠霞",
+      "status": "offline",
+      "avatar": "/static/bot3.jpg",
+      "statusText": "離線",
+      "bio": "朱！"
+    },
+    {
+      "uid": "1008",
+      "name": "林江",
+      "status": "online",
+      "avatar": "/static/bot4.jpg",
+      "statusText": "線上",
+      "bio": "阿華田！"
+    },
+    {
+      "uid": "1009",
+      "name": "坤坤",
+      "status": "offline",
+      "avatar": "/static/bot5.jpg",
+      "statusText": "離線",
+      "bio": "阿田！"
+    },
+    {
+      "uid": "1010",
+      "name": "圓圓",
+      "status": "online",
+      "avatar": "/static/bot6.jpg",
+      "statusText": "線上",
+      "bio": "屁股圓！"
+    }
+  ]
+}

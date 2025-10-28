@@ -1,0 +1,2046 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartLearn</title>
+    <link rel="stylesheet" href="/assets/tailwind.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/shepherd.js@11.1.1/dist/css/shepherd.css"
+    />
+
+    <style>
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        overflow-x: hidden; /* 重點！強制無scrollbar */
+        overflow-y: auto;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Microsoft JhengHei", sans-serif;
+        background-color: #f0f0f0;
+      }
+      .app-container {
+        min-height: 100vh;
+        width: 100%;
+        background-color: #e8e8e8;
+        border-radius: 15px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        padding-bottom: 0; /* 不要設定padding-bottom */
+      }
+
+      /* Header */
+      .header {
+        flex: 0 0 70px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 2vw;
+        height: 70px;
+      }
+
+      .logo {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        cursor: pointer;
+        padding: 10px 15px;
+        border-radius: 8px;
+        transition: all 0.3s;
+        border: none;
+        background: none;
+      }
+      .logo:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        transform: translateY(-1px);
+      }
+      .nav-menu {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        margin-left: auto;
+        margin-right: 50px;
+      }
+      .nav-item {
+        color: #333;
+        text-decoration: none;
+        font-weight: bold;
+        padding: 8px 15px;
+        border-radius: 8px;
+        transition: background-color 0.3s;
+      }
+      .nav-item:hover {
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+      .user-profile {
+        position: relative;
+      }
+      .profile-button {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e8e8e8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        border: none;
+        transition: background-color 0.3s;
+      }
+      .profile-button:hover {
+        background-color: #777;
+      }
+
+      .dropdown-menu {
+        position: absolute;
+        top: 50px;
+        right: 0;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        min-width: 150px;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s;
+      }
+      .dropdown-menu.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+      .dropdown-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background-color 0.3s;
+      }
+      .dropdown-item:hover {
+        background-color: #f5f5f5;
+      }
+      .dropdown-item:last-child {
+        border-bottom: none;
+      }
+
+      /* Main Content Grid */
+      .main-content {
+        flex: 1 1 0;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 15% 1fr 20%;
+        gap: 1.5%;
+        align-items: stretch;
+        height: 0;
+        padding: 0 2%;
+        margin-bottom: 2.4vw; /* ←加這行，留底部空間 */
+      }
+      @media (max-width: 900px) {
+        .main-content {
+          grid-template-columns: 1fr;
+          padding: 0 1vw;
+        }
+        .left-sidebar,
+        .right-sidebar {
+          display: none;
+        }
+      }
+      /* Sidebars & Card */
+      .left-sidebar,
+      .right-sidebar {
+        min-width: 0;
+        max-width: 100vw;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 1vw;
+      }
+      /* 任務列表樣式 */
+      .task-card {
+        background-color: white;
+        border-radius: 15px;
+        padding: 1.5vw 1vw;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 0;
+        min-height: 0;
+        overflow-y: auto;
+      }
+      .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f0f0f0;
+      }
+      .task-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+      }
+      .task-count {
+        background-color: #4caf50;
+        color: white;
+        border-radius: 12px;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      .task-list {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: 0;
+      }
+      .task-item {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 12px;
+        border-left: 4px solid #4caf50;
+        transition: all 0.3s;
+        cursor: pointer;
+      }
+      .task-item:hover {
+        background-color: #e8f5e8;
+        transform: translateX(3px);
+      }
+      .task-item.completed {
+        border-left-color: #ffc107;
+        background-color: #fff8e1;
+      }
+      .task-item.completed:hover {
+        background-color: #ffecb3;
+      }
+
+      .task-name {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+        font-size: 14px;
+      }
+      .task-description {
+        color: #666;
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+      .task-progress {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .task-progress-bar {
+        flex: 1;
+        height: 6px;
+        background-color: #e0e0e0;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-right: 8px;
+      }
+      .task-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4caf50, #66bb6a);
+        border-radius: 3px;
+        transition: width 0.3s;
+      }
+      .task-progress-text {
+        font-size: 11px;
+        font-weight: bold;
+        color: #4caf50;
+      }
+
+      .task-reward {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .task-coins {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: #ff9800;
+        font-weight: bold;
+        font-size: 12px;
+      }
+      .task-status {
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: bold;
+      }
+      .task-status.available {
+        background-color: #4caf50;
+        color: white;
+      }
+      .task-status.in-progress {
+        background-color: #2196f3;
+        color: white;
+      }
+      .task-status.completed {
+        background-color: #ffc107;
+        color: #333;
+      }
+
+      /* 好友列表觸發按鈕固定在左側 */
+      .friends-trigger-button {
+        position: fixed;
+        top: 30%;
+        left: 0;
+        transform: translateY(-50%);
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 0 12px 12px 0;
+        padding: 8px 12px;
+        cursor: pointer;
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+        z-index: 1100;
+        transition: all 0.3s;
+        width: 45px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
+      .friends-trigger-button:hover {
+        background-color: #45a049;
+        left: 5px;
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.2);
+      }
+      .friends-trigger-text {
+        display: none;
+      }
+
+      /* 自訂上下留白（可自行調整） */
+      :root {
+        --friends-gap: 24px; /* 上下各留 24px */
+        --friends-left: 24px; /* 距離左邊 24px，看起來更像浮窗 */
+      }
+      /* 想要更柔和的遮罩，可以稍微淡一點加點模糊 */
+      .friends-sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(1px);
+        z-index: 1999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+      }
+      .friends-sidebar-overlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* 小螢幕時仍可改為全高滿版（可選） */
+      @media (max-width: 640px) {
+        :root {
+          --friends-gap: 0;
+          --friends-left: 0;
+        }
+        .friends-sidebar {
+          border-radius: 0;
+          width: 88vw; /* 或 100vw 想要滿版就改 */
+          height: 100vh;
+          top: 0;
+        }
+      }
+
+      /* 好友列表標題區 */
+      .friends-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid #eee;
+        background-color: #f5f5f5;
+        color: #686464;
+        gap: 12px;
+      }
+      .friends-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin: 0;
+      }
+      .close-friends-btn {
+        background: none;
+        border: none;
+        color: #686464;
+        font-size: 24px;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.3s;
+      }
+      .close-friends-btn:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      /* 好友列表內容 */
+      .friends-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+      }
+      .friend-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      .friend-item:last-child {
+        border-bottom: none;
+      }
+      .friend-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        font-size: 20px;
+        color: white;
+        font-weight: bold;
+      }
+      .friend-info {
+        flex: 1;
+      }
+      .friend-name {
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #333;
+      }
+      .friend-status {
+        font-size: 12px;
+        color: #999;
+      }
+      .online {
+        color: #4caf50;
+      }
+      .offline {
+        color: #999;
+      }
+
+      /* 好友列表底部按鈕 */
+      .friends-actions {
+        padding: 20px;
+        border-top: 1px solid #eee;
+        display: flex;
+        gap: 10px;
+      }
+      .friend-action-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+      }
+      .add-friend-btn {
+        background-color: #4caf50;
+        color: white;
+      }
+      .add-friend-btn:hover {
+        background-color: #45a049;
+        transform: translateY(-1px);
+      }
+      .friend-requests-btn {
+        background-color: #2196f3;
+        color: white;
+      }
+      .friend-requests-btn:hover {
+        background-color: #1976d2;
+        transform: translateY(-1px);
+      }
+
+      /* 商店按鈕固定左下 */
+      .shop-button {
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        background-color: #ff6b35;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 18px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 1100;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .shop-button:hover {
+        background-color: #e55a2b;
+      }
+      .shop-button:active {
+        transform: translateY(1px);
+      }
+
+      /* Center Content */
+      .center-content {
+        min-width: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 1.2vw;
+      }
+      .game-banner {
+        background: linear-gradient(135deg, #87ceeb, #98fb98);
+        border-radius: 15px;
+        /* 原本：padding: 1.2vw 1vw; */
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        color: #333;
+        /* 原本：flex: 0 0 80px;  ← 這行會把高度鎖死 */
+        flex: 0 0 auto; /* 高度交給內容自動撐開 */
+        min-height: 110px; /* 給個下限，避免太扁 */
+        box-sizing: border-box;
+      }
+      /* ===== 猴子進度條樣式 ===== */
+      :root {
+        --track-h: 14px;
+        --banana-size: 28px;
+        --monkey-size: 38px;
+      }
+
+      .bar {
+        position: relative;
+        height: var(--track-h);
+        background: #e5e7eb;
+        border-radius: 999px;
+        overflow: visible;
+        box-shadow: inset 0 0 0 2px #ddd;
+      }
+
+      .fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #60a5fa, #3b82f6);
+        border-radius: 999px;
+        transition: none;
+      }
+
+      .monkey {
+        position: absolute;
+        top: -calc(var(--monkey-size) - var(--track-h) / 2);
+        transform: translate(-50%, 0);
+        width: var(--monkey-size);
+        height: var(--monkey-size);
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .bananas {
+        position: relative;
+        height: calc(var(--banana-size) + 4px);
+        margin-top: 6px;
+      }
+
+      .banana {
+        position: absolute;
+        bottom: 0;
+        width: var(--banana-size);
+        height: var(--banana-size);
+        transform: translate(-50%, 0);
+        transition: transform 0.18s ease, opacity 0.18s ease;
+      }
+
+      .banana.eaten {
+        opacity: 0;
+        transform: translate(-50%, 0) scale(0.3) rotate(-20deg);
+      }
+
+      /* 控制按鈕樣式 */
+      .controls {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        flex-wrap: wrap; /* 空間不足時自動換行，不會溢出 */
+        align-items: center;
+      }
+      .controls button {
+        padding: 6px 10px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        background: #fff;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .controls button:hover {
+        background: #f1f5f9;
+      }
+      .controls .pct {
+        margin-left: auto;
+        font-weight: 600;
+        font-size: 12px;
+      }
+
+      /* Calendar */
+      .calendar {
+        background-color: white;
+        border-radius: 15px;
+        padding: 1.5vw 1vw;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        flex: 1 1 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .calendar-nav {
+        background: none;
+        border: none;
+        font-size: 22px;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .calendar-nav:hover {
+        background-color: #f0f0f0;
+      }
+      .calendar-title {
+        font-size: 17px;
+        font-weight: bold;
+        color: #333;
+      }
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+        text-align: center;
+        flex: 1;
+        min-height: 0;
+      }
+      .calendar-day-header {
+        font-weight: bold;
+        color: #666;
+        padding: 6px 0;
+        font-size: 13px;
+      }
+      .calendar-day {
+        padding: 7px 2px;
+        border-radius: 7px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 25px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .calendar-day:hover {
+        background-color: #f0f0f0;
+      }
+      .calendar-day.today {
+        background-color: #4caf50;
+        color: white;
+      }
+      .calendar-day.selected {
+        background-color: #2196f3;
+        color: white;
+      }
+      .calendar-day.next-month {
+        color: #ccc;
+      }
+
+      /* Right Sidebar */
+      .right-sidebar {
+        min-width: 0;
+        max-width: 100vw;
+        height: 100%;
+        gap: 1vw;
+      }
+      .widget {
+        background-color: white;
+        border-radius: 15px;
+        padding: 1.5vw 1vw;
+        flex: 1 1 0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.09);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 0;
+        min-width: 0;
+        overflow: hidden;
+      }
+      .widget:last-child {
+        position: relative;
+      }
+      .more-button {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background-color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 16px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+        z-index: 1100;
+      }
+      .more-button:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+      }
+      .menu-dots {
+        font-size: 20px;
+        color: #666;
+      }
+
+      @media (max-width: 768px) {
+        .main-content {
+          grid-template-columns: 1fr;
+          gap: 1vw;
+        }
+        .nav-menu {
+          display: none;
+        }
+        .friends-sidebar {
+          width: 90vw;
+          left: -90vw;
+        }
+      }
+      .add-progress-button {
+        background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+      }
+
+      .add-progress-button:hover {
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        transform: translateY(-2px);
+      }
+      /* 新增樣式 */
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        background-color: #ffffff;
+        transition: all 0.2s;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+
+      .form-input::placeholder {
+        color: #9ca3af;
+      }
+
+      .generate-button {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        padding: 0.875rem 2rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.875rem;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      }
+
+      .generate-button:hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+      }
+
+      .ai-form-container {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .ai-title {
+        font-size: 1.875rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 2rem;
+        text-align: center;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      /* 讓 Modal 永遠在最上層（比你現有的 1100 更高） */
+      .modal-overlay {
+        z-index: 3000;
+      }
+
+      /* 讓 Loading 遮罩永遠蓋在最上面，並把內容置中 */
+      #modalOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.85);
+        z-index: 3000;
+        display: none; /* 預設隱藏 */
+        justify-content: center; /* 開啟時置中 */
+        align-items: center;
+      }
+      #modalOverlay.show {
+        display: flex;
+      }
+      #modalContent {
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        display: flex; /* 這三行是關鍵 */
+        flex-direction: column;
+        align-items: center;
+      }
+      /* === Profile / Chat Modals === */
+      .modal-wrap {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(2px);
+        z-index: 3100;
+      }
+      .modal-wrap.show {
+        display: flex;
+      }
+
+      .modal-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+      }
+
+      /* === Profile === */
+      .profile-card {
+        width: 420px;
+        max-width: 92vw;
+        padding: 22px;
+      }
+      .profile-header {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+      .profile-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: #fff;
+        background: #60a5fa;
+      }
+      .profile-name {
+        font-weight: 800;
+        font-size: 18px;
+      }
+      .profile-meta {
+        color: #6b7280;
+        font-size: 13px;
+      }
+      .profile-actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 18px;
+      }
+      .profile-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+      }
+
+      .profile-status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .profile-status-dot.online {
+        background-color: #4caf50; /* 綠 */
+      }
+
+      .profile-status-dot.offline {
+        background-color: #9e9e9e; /* 灰 */
+      }
+
+      .btn {
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: #3b82f6;
+        color: #fff;
+        font-weight: bold;
+        font-size: 15px;
+        padding: 10px 20px;
+        border-radius: 12px;
+      }
+      .btn-danger {
+        background: #ef4444;
+        color: #fff;
+        font-weight: bold;
+        font-size: 15px;
+        padding: 10px 20px;
+        border-radius: 12px;
+      }
+      .msg {
+        max-width: 70%;
+        margin: 6px 0;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 14px;
+        line-height: 1.4;
+        word-wrap: break-word;
+        align-self: flex-start; /* 預設靠左 */
+        background: #f1f1f1;
+        color: #222;
+      }
+      .msg-row {
+        display: flex;
+        align-items: flex-end;
+        margin: 6px 0;
+      }
+      .msg-row.me {
+        justify-content: flex-end; /* 自己的訊息靠右 */
+      }
+
+      .msg-row.other {
+        justify-content: flex-start; /* 對方的訊息靠左 */
+      }
+
+      /* 泡泡 */
+      .msg-bubble {
+        max-width: 60%;
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-size: 14px;
+        line-height: 1.4;
+        word-wrap: break-word;
+      }
+
+      .msg-row.me .msg-bubble {
+        background: #3b82f6; /* 藍色 */
+        color: white;
+        border-bottom-right-radius: 4px;
+      }
+
+      .msg-row.other .msg-bubble {
+        background: #f1f1f1;
+        color: black;
+        border-bottom-left-radius: 4px;
+      }
+
+      /* 時間 */
+      .msg-time {
+        font-size: 12px;
+        color: #999;
+        margin-left: 6px;
+        margin-right: 6px;
+        align-self: flex-end; /* 貼齊訊息底部 */
+      }
+      .msg.me {
+        align-self: flex-end; /* 自己的訊息靠右 */
+        background: #3b82f6;
+        color: #fff;
+        border-bottom-right-radius: 4px;
+      }
+
+      .msg.other {
+        background: #e5e7eb;
+        color: #222;
+        border-bottom-left-radius: 4px;
+      }
+      /* 輸入區 */
+      .chat-input {
+        display: flex;
+        gap: 8px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .chat-input input {
+        flex: 1;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 10px;
+        background: #fff;
+      }
+      .chat-input button {
+        border: none;
+        border-radius: 10px;
+        padding: 10px 16px;
+        background: #64748b;
+        color: #fff;
+        cursor: pointer;
+      }
+      /* 標題列 */
+      .chat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        background: #f8f8f8;
+        border-bottom: 1px solid #eee;
+        font-weight: bold;
+      }
+      .chat-header button {
+        background: none;
+        border: none;
+        font-size: 22px;
+        cursor: pointer;
+      }
+
+      /* 訊息區 */
+      .chat-body {
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto;
+      }
+      .friends-chat-wrapper {
+        position: fixed;
+        top: var(--friends-gap);
+        left: var(--friends-left);
+        height: calc(100vh - calc(var(--friends-gap) * 2));
+        display: none;
+        flex-direction: row;
+        gap: 20px;
+        z-index: 2000;
+      }
+      .friends-chat-wrapper.show {
+        display: flex;
+      }
+
+      .friends-sidebar {
+        width: 400px;
+        height: 100%;
+        background-color: #fff;
+        box-shadow: 4px 12px 30px rgba(0, 0, 0, 0.15);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .friends-search-input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+      }
+
+      .friends-search-input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+      }
+
+      .chat-panel {
+        width: 420px;
+        height: 100%;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 4px 12px 30px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        opacity: 0;
+        transform: translateX(30px); /* 稍微偏右 */
+        transition: all 0.3s ease;
+        pointer-events: none; /* 避免隱藏時能點到 */
+        overflow: hidden;
+      }
+      .chat-panel.show {
+        opacity: 1;
+        transform: translateX(0);
+        pointer-events: auto;
+      }
+
+      .chat-header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* 讓頭像和名字有間距 */
+      }
+
+      .chat-header-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: bold;
+        color: #fff; /* emoji居中 */
+      }
+
+      /* 切換內容時做個淡入 */
+      .chat-body.fade {
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .friends-sidebar {
+        position: relative;
+      } /* 讓內層可絕對定位 */
+      .friends-overlay {
+        position: absolute;
+        inset: 0; /* 完全覆蓋 sidebar */
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 4px 12px 30px rgba(0, 0, 0, 0.15);
+        display: none;
+        flex-direction: column;
+        z-index: 10; /* 蓋住好友清單 */
+      }
+      .friends-overlay.show {
+        display: flex;
+      }
+      .friend-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .friend-chat-icon {
+        margin-left: auto;
+        font-size: 16px;
+        color: #3b82f6; /* 藍色 */
+        opacity: 0.8;
+      }
+
+      .friend-chat-icon:hover {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+      .friend-status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+      }
+
+      .friend-status-dot.online {
+        background-color: #4caf50; /* 綠色 */
+      }
+
+      .friend-status-dot.offline {
+        background-color: #9e9e9e; /* 灰色 */
+      }
+
+      #friendsListTrigger .notif-dot {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+      }
+
+      /* 好友請求彈窗跟新增好友一樣大小 */
+      #requestsOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      #requestsOverlay.show {
+        display: flex;
+      }
+      #requestsOverlay .modal-box {
+        background: #fff;
+        border-radius: 16px; /* 四個角都有圓角 */
+        width: 100%;
+        max-width: 420px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* 把 header/content 的直角裁掉 */
+      }
+      /* 外層彈窗容器 */
+      #requestsOverlay > div {
+        background: #fff;
+        border-radius: 16px; /* 統一圓角 */
+        width: 100%;
+        max-width: 420px; /* 跟新增好友一致 */
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* 關鍵：讓內層不會再露角 */
+      }
+
+      /* header */
+      #requestsOverlay .friends-header {
+        background: #f5f5f5;
+        padding: 12px 16px;
+        font-weight: 600;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 0; /* 🚫 不要自己圓角 */
+      }
+
+      /* 內容 */
+      #requestsOverlay .friends-content {
+        padding: 20px;
+        max-height: 360px;
+        overflow-y: auto;
+        border-radius: 0; /* 🚫 不要自己圓角 */
+      }
+
+      /* 好友請求卡片內的操作區 */
+      .req-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .req-accept,
+      .req-decline {
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .req-accept {
+        background: #10b981;
+      } /* 綠：接受 */
+      .req-decline {
+        background: #ef4444;
+      } /* 紅：拒絕 */
+
+      .req-accept:hover {
+        filter: brightness(1.05);
+      }
+      .req-decline:hover {
+        filter: brightness(1.05);
+      }
+
+      .friend-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+      }
+
+      .friend-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        margin-right: 12px;
+      }
+
+      .friend-info {
+        flex: 1;
+      }
+
+      .friend-name {
+        font-weight: bold;
+        color: #333;
+      }
+
+      .friend-last-msg {
+        font-size: 13px;
+        color: #666;
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .friend-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+      }
+
+      .msg-time {
+        font-size: 12px;
+        color: #999;
+      }
+
+      .unread-badge {
+        background: #ef4444;
+        color: #fff;
+        border-radius: 50%;
+        font-size: 12px;
+        font-weight: bold;
+        padding: 4px 7px;
+        line-height: 1;
+      }
+      .notif-dot {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        background: red;
+        color: white;
+        font-size: 12px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 4px;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      /* 自訂導覽樣式 */
+      .shepherd-element {
+        font-family: "Microsoft JhengHei", sans-serif;
+      }
+
+      .shepherd-popover {
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        background: white;
+      }
+
+      .shepherd-content {
+        padding: 20px;
+      }
+
+      .shepherd-text {
+        color: #333;
+        font-size: 15px;
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+
+      .shepherd-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 12px;
+      }
+
+      .shepherd-button {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 14px;
+        margin-right: 8px;
+      }
+
+      .shepherd-button.shepherd-button-primary {
+        background: linear-gradient(135deg, #4caf50, #66bb6a);
+        color: white;
+      }
+
+      .shepherd-button.shepherd-button-primary:hover {
+        background: linear-gradient(135deg, #45a049, #5ab35c);
+        transform: translateY(-1px);
+      }
+
+      .shepherd-button.shepherd-button-secondary {
+        background: #f1f5f9;
+        color: #333;
+        border: 1px solid #e2e8f0;
+      }
+
+      .shepherd-button.shepherd-button-secondary:hover {
+        background: #e2e8f0;
+      }
+
+      .shepherd-buttons {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      /* 高亮效果 */
+      .shepherd-highlight {
+        border-radius: 12px;
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+      }
+
+      .step-counter {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+
+      .step-counter strong {
+        color: #4caf50;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app-container">
+      <header class="header">
+        <button class="logo" onclick="window.location.reload()">
+          SmartLearn
+        </button>
+
+        <nav class="nav-menu">
+          <button class="add-progress-button" onclick="openAddProgressModal()">
+            + 新增學習目標
+          </button>
+          <!-- <a href="https://9a4cf83a6a71.ngrok-free.app/" class="add-progress-button">
+            + 新增學習目標
+          </a> -->
+          <a href="https://moodle.mcu.edu.tw/" class="nav-item">Moodle</a>
+          <a href="../行事曆頁面/plan.html" class="nav-item">行事曆</a>
+          <a href="../筆記頁面/note.html" class="nav-item">學習筆記</a>
+          <a href="../學習進度/smartlearn.html" class="nav-item">學習進度</a>
+          <a href="../測驗頁面/test.html" class="nav-item">學習測驗</a>
+        </nav>
+        <div class="user-profile relative flex items-center gap-2">
+          <!-- 名稱 -->
+          <span
+            id="topName"
+            class="hidden sm:block text-sm font-medium text-gray-700"
+          ></span>
+
+          <!-- 頭像容器 -->
+          <button
+            class="profile-button w-10 h-10 rounded-full overflow-hidden bg-blue-500 text-white flex items-center justify-center text-sm relative"
+          >
+            <span id="topInitial">U</span>
+            <img
+              id="topImg"
+              class="hidden w-full h-full object-cover absolute inset-0"
+              alt="avatar"
+            />
+          </button>
+        </div>
+        <!-- 下拉選單 -->
+        <div class="dropdown-menu">
+          <div
+            class="dropdown-item"
+            onclick="window.location.href='/myself_ui'"
+          >
+            個人資料
+          </div>
+          <div class="dropdown-item" onclick="startTutorial()">快速上手</div>
+          <div
+            class="dropdown-item"
+            onclick="window.location.href='/Notification_ui'"
+          >
+            回報問題
+          </div>
+          <div class="dropdown-item" onclick="window.location.href='/login_ui'">
+            登出
+          </div>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <aside class="left-sidebar">
+          <div class="task-card">
+            <div class="task-header">
+              <h3 class="task-title">📋 任務</h3>
+              <span class="task-count">5</span>
+            </div>
+            <div class="task-list" id="taskList">
+              <!-- 任務列表將由 JavaScript 動態生成 -->
+            </div>
+          </div>
+        </aside>
+
+        <section class="center-content">
+          <div class="game-banner">
+            <div class="bar" id="bar">
+              <div class="fill" id="fill"></div>
+              <img
+                id="monkey"
+                class="monkey"
+                src="/main/images/monkey.png"
+                alt="monkey"
+              />
+            </div>
+            <!-- 香蕉標記（下方） -->
+            <div class="bananas" id="bananas"></div>
+
+            <!-- 控制按鈕區 -->
+            <div class="controls">
+              <button onclick="setProgress(0)">重置 0%</button>
+              <button onclick="bump(1)">+1%</button>
+              <button onclick="bump(5)">+5%</button>
+              <button onclick="bump(10)">+10%</button>
+              <button onclick="autoRun()">自動測試 (1%一步)</button>
+              <span class="pct">目前：<span id="now">0</span>%</span>
+            </div>
+          </div>
+
+          <div class="calendar">
+            <div class="calendar-header">
+              <button class="calendar-nav">‹</button>
+              <div class="calendar-title">2025年 五月</div>
+              <button class="calendar-nav">›</button>
+            </div>
+            <div class="calendar-grid">
+              <!-- 日曆內容將由 JavaScript 動態生成 -->
+            </div>
+          </div>
+        </section>
+
+        <aside class="right-sidebar">
+          <div class="widget"></div>
+          <div class="widget"></div>
+          <div class="widget"></div>
+        </aside>
+      </main>
+
+      <!-- 好友列表觸發按鈕固定在左側 -->
+      <button id="friendsListTrigger" class="friends-trigger-button relative">
+        👥
+        <span id="friendsNotif" class="notif-dot hidden"></span>
+      </button>
+      <!-- 好友列表側邊視窗 -->
+      <div class="friends-sidebar-overlay" id="friendsOverlay"></div>
+
+      <div class="friends-chat-wrapper" id="friendsChatWrapper">
+        <!-- 左：好友列表 -->
+        <div class="friends-sidebar" id="friendsSidebar">
+          <div class="friends-header">
+            <input
+              type="text"
+              id="friendsSearchInput"
+              class="friends-search-input"
+              placeholder="搜尋好友..."
+            />
+            <button class="close-friends-btn" id="closeFriendsBtn">×</button>
+          </div>
+
+          <!-- 好友清單（由 JS 填入） -->
+          <div class="friends-content" id="friendsContent"></div>
+
+          <!-- 底部按鈕 -->
+          <div class="friends-actions">
+            <button class="friend-action-btn add-friend-btn" id="addFriendBtn">
+              新增好友
+            </button>
+            <button
+              class="friend-action-btn friend-requests-btn relative"
+              id="friendRequestsBtn"
+            >
+              好友請求
+              <span id="requestsNotif" class="notif-dot hidden">2</span>
+            </button>
+          </div>
+          <!-- 中：新增好友「覆蓋層」（預設隱藏），會疊在好友列表上 -->
+          <div class="friends-overlay" id="addFriendOverlay">
+            <div class="friends-header">
+              <h3 class="friends-title">新增好友</h3>
+              <button class="close-friends-btn" id="closeAddFriendBtn">
+                ×
+              </button>
+            </div>
+
+            <!-- 搜尋列（注意：這裡的 ID 不能和別處重複） -->
+            <div class="p-3 border-b">
+              <div class="flex gap-2">
+                <input
+                  id="addFriendSearchInput"
+                  class="flex-1 px-3 py-2 rounded-lg border"
+                  placeholder="請輸入UID、用戶名稱搜尋好友"
+                />
+                <button
+                  id="addFriendSearchBtn"
+                  class="px-4 py-2 bg-blue-500 text-white rounded-lg"
+                >
+                  搜尋
+                </button>
+              </div>
+            </div>
+
+            <!-- 搜尋結果（用和好友列表一樣的卡片樣式） -->
+            <div class="friends-content" id="addFriendSearchResult">
+              <p class="text-gray-500 text-sm">請輸入關鍵字搜尋好友</p>
+            </div>
+          </div>
+        </div>
+        <!-- 右：聊天面板 -->
+        <div class="chat-panel" id="chatPanel">
+          <div class="chat-header">
+            <div class="chat-header-left">
+              <div id="chatUserAvatar" class="chat-header-avatar"></div>
+              <span id="chatUserName">使用者</span>
+            </div>
+            <button id="closeChatBtn">×</button>
+          </div>
+          <div class="chat-body" id="chatBody">
+            <p style="color: #999">開始聊天吧！</p>
+          </div>
+          <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="輸入訊息…" />
+            <button id="chatSend">發送</button>
+          </div>
+        </div>
+        <div class="friends-overlay" id="requestsOverlay">
+          <div class="modal-box">
+            <div class="friends-header">
+              <h3 class="friends-title">好友請求</h3>
+              <button class="close-friends-btn" id="closeRequestsBtn">×</button>
+            </div>
+
+            <div class="friends-content" id="requestsContent">
+              <!-- 由 JS 動態渲染 -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 商店按鈕固定在左下角 -->
+      <button
+        class="shop-button"
+        onclick="window.location.href='../商店/store.html'"
+      >
+        🛒 商店
+      </button>
+
+      <!-- 更多按鈕固定在右下角 -->
+      <button
+        class="more-button"
+        onclick="window.location.href='../甘特圖頁面/Gantt chart.html'"
+      >
+        <div class="menu-dots">⋯</div>
+      </button>
+    </div>
+
+    <!-- 個人資訊 Modal -->
+    <div id="profileModal" class="modal-wrap" role="dialog" aria-modal="true">
+      <div class="modal-card profile-card">
+        <div class="profile-header">
+          <div id="profileAvatar" class="profile-avatar">🐣</div>
+          <div>
+            <div id="profileName" class="profile-name">使用者</div>
+            <div id="profileStatus" class="profile-meta profile-status"></div>
+          </div>
+        </div>
+        <div class="profile-meta" id="profileBio">
+          這裡可以放自我介紹、最近學習目標等。
+        </div>
+        <div class="profile-actions">
+          <button id="profileStartChat" class="btn-primary">發起聊天</button>
+          <button class="btn-danger">封鎖</button>
+        </div>
+      </div>
+    </div>
+    <!-- AI 學習計畫產生器 Modal -->
+    <div
+      id="addProgressModal"
+      class="fixed inset-0 hidden z-50 flex items-center justify-center"
+    >
+      <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full m-4">
+        <div class="ai-form-container">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="ai-title">SmartLearn 計畫產生器</h3>
+            <button
+              onclick="closeAddProgressModal()"
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <form
+            id="addProgressForm"
+            class="space-y-6"
+            onsubmit="handleAddProgressSubmit(event)"
+          >
+            <div class="form-group">
+              <label class="form-label">學習目標：</label>
+              <input
+                type="text"
+                id="goalInput"
+                class="form-input"
+                placeholder="例如：學習英文"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">每週可用時間（小時）：</label>
+              <input
+                type="number"
+                id="hoursInput"
+                class="form-input"
+                placeholder="建議時數：10-20"
+                min="1"
+                max="168"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">總計畫週數：</label>
+              <input
+                type="number"
+                id="weeksInput"
+                class="form-input"
+                placeholder="建議週次：8"
+                min="1"
+                max="52"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">預計開始日期：</label>
+              <input type="date" id="dateInput" class="form-input" />
+            </div>
+
+            <div class="flex justify-center pt-4">
+              <button type="submit" class="generate-button">
+                產生學習計畫
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalOverlay">
+      <div id="modalContent">
+        <div id="modalSpinner" style="margin-bottom: 18px">
+          <img
+            src="/static/monkey-running.gif"
+            alt="Loading..."
+            style="width: 64px; height: 64px"
+          />
+        </div>
+        <div
+          id="modalMsg"
+          style="
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            text-align: center;
+            letter-spacing: 1px;
+          "
+        >
+          學習計畫生成中，請稍候...
+        </div>
+      </div>
+    </div>
+    <script>
+      // 延遲加載，確保頁面元素已存在
+      function initTutorial() {
+        const tour = new Shepherd.Tour({
+          useModalOverlay: true,
+          modalOverlayOpeningPadding: 8,
+          confirmCancel: true,
+          confirmCancelMessage: "確定要退出新手導覽嗎？",
+        });
+
+        // 設定 Shepherd 主題
+        tour.addStep({
+          id: "step-1-tasks",
+          title: "📋 任務系統",
+          text: "在左側可以看到每日任務、完成特定任務來獲得金幣和經驗值。點擊任務卡片可以查看詳細進度！",
+          attachTo: {
+            element: ".task-card",
+            on: "right",
+          },
+          buttons: [
+            {
+              text: "上一步",
+              action: tour.back,
+              classes: "shepherd-button shepherd-button-secondary",
+            },
+            {
+              text: "下一步",
+              action: tour.next,
+              classes: "shepherd-button shepherd-button-primary",
+            },
+          ],
+          scrollTo: true,
+        });
+
+        tour.addStep({
+          id: "step-2-friends",
+          title: "👥 好友列表",
+          text: "點擊左側的👥按鈕展開好友列表。在這裡可以查看朋友狀態、發起聊天、新增好友，還能接收好友請求！",
+          attachTo: {
+            element: "#friendsListTrigger",
+            on: "right",
+          },
+          buttons: [
+            {
+              text: "上一步",
+              action: tour.back,
+              classes: "shepherd-button shepherd-button-secondary",
+            },
+            {
+              text: "下一步",
+              action: tour.next,
+              classes: "shepherd-button shepherd-button-primary",
+            },
+          ],
+          scrollTo: true,
+        });
+
+        tour.addStep({
+          id: "step-3-shop",
+          title: "🛒 商店",
+          text: "左下角的商店按鈕可以購買各種學習道具、頭像和特效。用金幣來裝扮你的個人空間吧！",
+          attachTo: {
+            element: ".shop-button",
+            on: "top",
+          },
+          buttons: [
+            {
+              text: "上一步",
+              action: tour.back,
+              classes: "shepherd-button shepherd-button-secondary",
+            },
+            {
+              text: "下一步",
+              action: tour.next,
+              classes: "shepherd-button shepherd-button-primary",
+            },
+          ],
+          scrollTo: true,
+        });
+
+        tour.addStep({
+          id: "step-4-progress",
+          title: "🐵 學習進度條",
+          text: "中間上方的猴子進度條展示你當前的學習進度。看著可愛的猴子一步步吃香蕉，完成學習目標吧！按下按鈕可以手動測試進度。",
+          attachTo: {
+            element: ".game-banner",
+            on: "bottom",
+          },
+          buttons: [
+            {
+              text: "上一步",
+              action: tour.back,
+              classes: "shepherd-button shepherd-button-secondary",
+            },
+            {
+              text: "下一步",
+              action: tour.next,
+              classes: "shepherd-button shepherd-button-primary",
+            },
+          ],
+          scrollTo: true,
+        });
+
+        tour.addStep({
+          id: "step-5-calendar",
+          title: "📅 行事曆",
+          text: "中間的行事曆可以查看和規劃每天的學習時程。點擊任意日期即可跳轉到行事曆頁面進行詳細規劃！",
+          attachTo: {
+            element: ".calendar",
+            on: "bottom",
+          },
+          buttons: [
+            {
+              text: "上一步",
+              action: tour.back,
+              classes: "shepherd-button shepherd-button-secondary",
+            },
+            {
+              text: "下一步",
+              action: tour.next,
+              classes: "shepherd-button shepherd-button-primary",
+            },
+          ],
+          scrollTo: true,
+        });
+
+        tour.addStep({
+          id: "step-6-more",
+          title: "⋯ 更多功能",
+          text: "右下角的三點按鈕可以訪問甘特圖功能。用甘特圖可以更清楚地管理你的長期學習計畫！",
+          attachTo: {
+            element: ".more-button",
+            on: "left",
+          },
+          buttons: [
+            {
+              text: "上一步",
+              action: tour.back,
+              classes: "shepherd-button shepherd-button-secondary",
+            },
+            {
+              text: "下一步",
+              action: tour.next,
+              classes: "shepherd-button shepherd-button-primary",
+            },
+          ],
+          scrollTo: true,
+        });
+
+        tour.addStep({
+          id: "step-7-navbar",
+          title: "🔗 導覽列",
+          text: "頂部導覽列提供快速訪問 Moodle、行事曆、學習筆記、學習進度和測驗等功能。點擊即可快速跳轉！",
+          attachTo: {
+            element: ".nav-menu",
+            on: "bottom",
+          },
+          buttons: [
+            {
+              text: "上一步",
+              action: tour.back,
+              classes: "shepherd-button shepherd-button-secondary",
+            },
+            {
+              text: "下一步",
+              action: tour.next,
+              classes: "shepherd-button shepherd-button-primary",
+            },
+          ],
+          scrollTo: true,
+        });
+
+        tour.addStep({
+          id: "step-8-add-goal",
+          title: "✨ 新增學習目標",
+          text: "點擊頂部綠色的「+ 新增學習目標」按鈕，輸入學習內容、時間和週數，讓 AI 幫你生成完整的學習計畫！",
+          attachTo: {
+            element: ".add-progress-button",
+            on: "bottom",
+          },
+          buttons: [
+            {
+              text: "上一步",
+              action: tour.back,
+              classes: "shepherd-button shepherd-button-secondary",
+            },
+            {
+              text: "完成導覽",
+              action: () => {
+                tour.complete();
+              },
+              classes: "shepherd-button shepherd-button-primary",
+            },
+          ],
+          scrollTo: true,
+        });
+
+        return tour;
+      }
+
+      // 開始導覽函式（可從下拉選單調用）
+      window.startTutorial = function () {
+        const tour = initTutorial();
+        tour.start();
+      };
+
+      // 頁面加載完成後檢查是否要自動開始導覽
+      window.addEventListener("load", () => {
+        // 檢查是否已完成過導覽，或者由下拉選單觸發
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("tutorial") === "start") {
+          window.startTutorial();
+        }
+      });
+    </script>
+
+    <!-- JavaScript 引入 -->
+    <script src="/static/config.js"></script>
+    <script src="/main/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@11.1.1/dist/js/shepherd.min.js"></script>
+  </body>
+</html>

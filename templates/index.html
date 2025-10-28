@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>SmartLearn 學習計畫產生器</title>
+
+  <script src="/static/config.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+    input, textarea {
+      display: block;
+      margin-bottom: 10px;
+      width: 100%;
+      font-size: 15px;
+      border-radius: 6px;
+      border: 1px solid #bbb;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    button {
+      cursor: pointer;
+    }
+    .gantt-wrapper {
+      overflow: auto;
+      max-height: 600px; 
+      border: none;
+    }
+    .gantt-table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 900px;   
+      background: #f8f8f8; 
+    }
+    .gantt-table th, .gantt-table td {
+      border: none !important; 
+      padding: 8px;
+      text-align: center;
+      background: #f8f8f8;
+    }
+    .gantt-table th {
+      position: sticky;
+      top: 0;               
+      background: #f8f8f8;  
+      border-top: none !important;
+      z-index: 5;
+    }
+    .gantt-bar {
+      display: block;
+      background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+      color: #f8f8f8;
+      border-radius: 14px;
+      margin: 6px 0;
+      padding: 12px 8px;
+      font-weight: 500;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      text-align: center;
+      position: relative; 
+      cursor: pointer;
+    }
+    .gantt-table td:first-child,
+    .gantt-table th:first-child {
+      position: sticky;
+      left: 0;
+      background: #f8f8f8;
+      height: 100%;
+      z-index: 10;
+      font-weight: bold;
+      width: 80px;      
+      max-width: 80px;
+      text-align: center;      
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .gantt-table th:first-child {
+      z-index: 15;
+      font-size: 16px;
+    }
+    .gantt-table td:first-child {
+      border-top: 1px solid #f8f8f8;
+      border-bottom: 1px solid #f8f8f8;
+      background: #f8f8f8;    
+      width: 80px;
+      max-width: 80px;
+      min-width: 80px;
+      text-align: center;
+      vertical-align: middle;
+      font-weight: bold;
+      height: 70px;             
+    }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      min-width: 250px;
+      background: #333;
+      color: #fff;
+      text-align: left;
+      border-radius: 8px;
+      padding: 12px 16px;
+      position: absolute;
+      z-index: 99;
+      left: 50%;
+      top: 110%;
+      transform: translateX(-50%);
+      font-size: 15px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+      white-space: pre-line;
+      line-height: 1.6;
+      opacity: 0;
+      transition: opacity 0.18s;
+      pointer-events: none;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    .tooltip[data-tooltip] {
+      position: relative;
+      cursor: pointer;
+    }
+    .tooltip[data-tooltip]::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: 50%;
+      left: 100%;
+      transform: translateY(-50%);
+      background: #333;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      white-space: nowrap;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 100;
+      margin-left: 8px;
+    }
+
+    .tooltip[data-tooltip]:hover::after {
+      opacity: 1;
+    }
+    .msg {
+      margin-top: 12px;
+      color: #379cfb;
+    }
+    .msg.error {
+      color: #c00;
+    }
+    hr {
+      margin: 32px 0;
+      border: none;
+      border-top: 2px solid red !important;
+    }
+    #modalOverlay {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.85);
+    }
+    #modalContent {
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%,-50%);
+      padding: 30px 50px;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 6px 32px rgba(60,60,60,0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #alertModal {
+      display: none;
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh; z-index: 10000;
+      background: rgba(0,0,0,0.32);
+      align-items: center;
+      justify-content: center;
+    }
+    #alertModal.show {
+      display: flex;
+    }
+    #alertModal .modal-box {
+      background: #fff;
+      padding: 30px 48px;
+      border-radius: 14px;
+      box-shadow: 0 6px 32px #3334;
+      text-align: center;
+    }
+    #alertModalMsg {
+      font-size: 18px;
+      color: #2c3e50;
+      margin-bottom: 18px;
+    }
+    #chat-trigger {
+      position: fixed;
+      top: 28px;
+      right: 24px;
+      z-index: 10002;
+      cursor: pointer;
+      display: none;
+    }
+    .chat-trigger-img {
+      width: 72px;
+      height: 72px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 6px #0001;
+      border: 2.5px solid #eee;
+    }
+    .chat-trigger-img img {
+      width: 62px;
+      height: 62px;
+      object-fit: contain;
+      display: block;
+    }
+
+    #chat-float, #chat-float *, #chat-float *:before, #chat-float *:after {
+      box-sizing: border-box !important;
+    }
+
+    #chat-float {
+      display: none;
+      position: fixed;
+      top: 112px;
+      right: 32px;
+      width: 340px;
+      max-width: 90vw;
+      min-height: 480px;
+      max-height: 80vh;
+      background: #fff;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      border-radius: 14px;
+      z-index: 10001;
+      border: 2px solid #e3e3e3;
+      padding: 0;
+      overflow: hidden;
+      flex-direction: column;
+    }
+
+    .chat-close-row {
+      text-align: right;
+      padding: 8px 14px 0 0;
+      min-height: 36px;
+      background: transparent;
+      flex-shrink: 0;
+    }
+    .chat-content-main {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 0 16px 16px 16px;
+      gap: 10px;
+      box-sizing: border-box;
+    }
+    #chat-box {
+      flex: 1 1 0;
+      min-height: 80px;
+      max-height: none;
+      border: 1.5px solid #ccc;
+      overflow-y: auto;
+      background: #f9f9f9;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.6;
+      word-break: break-all;
+      box-sizing: border-box;
+      padding: 12px 10px;
+      margin-bottom: 0;
+    }
+    .quick-and-input {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 0;
+    }
+    .quick-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 8px;
+      width: 100%;
+    }
+    .quick-buttons button {
+      display: flex;
+      align-items: center;    
+      justify-content: center; 
+      min-height: 48px;
+      min-width: 0;
+      width: 100%;
+      font-size: 14px;  
+      font-weight: normal; 
+      padding: 0 6px;
+      border-radius: 10px;
+      border: 1.5px solid #aaa;
+      background: #f6f8ff;
+      cursor: pointer;
+      line-height: 1.4;
+      text-align: center;
+      box-sizing: border-box;
+      transition: background 0.13s, border 0.13s;
+      word-break: break-word;
+      white-space: pre-line;
+    }
+    .quick-buttons button:hover {
+      background: #e3eafd;
+      border: 1.5px solid #379cfb;
+      color: #1656b0;
+    }
+    #userInput {
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #bbb;
+      padding: 8px;
+      resize: vertical;
+      box-sizing: border-box;
+      flex: 1 1 0;
+    }
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      font-size: 15px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      margin-left: 4px;
+    }
+    .zh-horiz {
+      writing-mode: horizontal-tb !important;
+      text-orientation: initial !important;
+      letter-spacing: 0.1em;
+      display: inline-block;
+      white-space: nowrap;
+      min-width: 32px;
+      min-height: 22px;
+      font-size: 17px;
+    }
+    .chat-msg-row {
+      display: flex;
+      align-items: flex-end;
+      margin: 10px 0;
+    }
+    .msg-user { justify-content: flex-end; } 
+    .msg-bot  { justify-content: flex-start; }
+
+    .msg-bubble {
+      max-width: 60%;
+      padding: 13px 20px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.7;
+      word-break: break-word;
+      box-shadow: 0 2px 8px rgba(96, 123, 215, 0.067);
+      position: relative;
+    }
+    .bubble-user {
+      background: #d3f382;
+      color: #ffffff;
+      border-bottom-right-radius: 6px;  
+      border-bottom-left-radius: 18px;  
+    }
+    .bubble-bot {
+      background: #a4c2e4;
+      color: #fff;
+      border-bottom-left-radius: 6px;   
+      border-bottom-right-radius: 18px; 
+    }
+    .bot-avatar {
+      width: 38px;
+      height: 38px;
+      margin-left: 2px;
+      margin-right: 12px;
+      border-radius: 50%;
+      background: #f5f6fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      margin-right: 2px;
+      margin-left: 12px;
+      border-radius: 50%;
+      background: #e7f071;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #d0e77b;
+      font-size: 22px;
+    }
+    .typing-bubble {
+      background: #8db7e6;
+      color: #fff;
+      border-bottom-right-radius: 6px;
+      padding: 13px 16px;
+      border-radius: 18px;
+      min-width: 52px;
+      min-height: 26px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dot-flashing {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #fff;
+      margin-right: 2px;
+      animation: dotFlashing 1s infinite linear alternate;
+    }
+    .dot-flashing:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .dot-flashing:nth-child(3) {
+      animation-delay: 0.4s;    
+    }
+    @keyframes dotFlashing {
+      0% { opacity: 0.1; }
+      50% { opacity: 1; }
+      100% { opacity: 0.1; }
+    }
+  </style>
+</head>
+<body>
+  <h1> SmartLearn 學習計畫產生器</h1>
+
+  <div id="chat-trigger">
+      <div class="chat-trigger-img">
+        <img src="/static/bot1.jpg" alt="Chat" />
+      </div>
+  </div>
+
+  <div id="chat-float">
+    <div class="chat-close-row">
+      <button onclick="closeChatFloat()" style="background:none; border:none; font-size:20px; cursor:pointer;">×</button>
+    </div>
+    <div class="chat-content-main">
+      <div id="chat-box"></div>
+      <div class="quick-and-input">
+      <div class="quick-buttons">
+        <button onclick="quickInsertAndSend('我想修改計畫!')">我想修改計畫!</button>
+        <button onclick="quickInsertAndSend('我這週完成了哪些進度?')">我這週完成了哪些進度？</button>
+        <button onclick="quickInsertAndSend('我這週沒完成進度，可以幫我補救嗎?')">我這週沒完成進度，可以幫我補救嗎？</button>
+        <button onclick="quickInsertAndSend('我想加強某個章節，可以重排進度嗎?')">我想加強某個章節，可以重排進度嗎？</button>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <textarea id="userInput" placeholder="請輸入訊息..." rows="3" onkeydown="handleKey(event)"></textarea>
+        <button class="send-btn" onclick="sendMessage()">送出</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div id="gantt-group" style="display:none">
+    <div class="gantt-wrapper"></div>
+    <h2>當前的學習進度</h2>
+    <div id="gantt-original"></div>
+  </div>
+
+  <div id="msg" class="msg"></div>
+    <div id="modalOverlay" style="display:none;">
+  <div id="modalContent">
+    <div id="modalSpinner" style="margin-bottom:18px;">
+      <img src="/static/monkey-running.gif" alt="Loading..." style="width:64px; height:64px;">
+    </div>
+    <div id="modalMsg" style="font-size:20px;font-weight:600;color:#2c3e50;text-align:center;letter-spacing:1px;">
+      學習計畫生成中，請稍候...
+    </div>
+  </div>
+</div>
+
+<div id="alertModal">
+  <div class="modal-box">
+    <div id="alertModalMsg"></div>
+    <button onclick="hideAlertModal()" style="padding:8px 24px; font-size:16px;">確定</button>
+  </div>
+</div>
+
+  <script>
+      async function saveNewPlan(plan) {
+    try {
+      const resp = await fetch(`${API_BASE}/save_plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan,
+          mode: "new"
+        })
+      });
+      const result = await resp.json();
+      if (resp.ok) {
+        window.currentPlanFile = result.filename; // ✅ 記住檔名
+        console.log("🆕 新計畫已建立:", window.currentPlanFile);
+      } else {
+        console.error("❌ 建立新計畫失敗:", result.detail || result);
+      }
+    } catch (e) {
+      console.error("❌ 建立新計畫錯誤:", e);
+    }
+  }
+
+  async function updatePlan(plan) {
+    try {
+      const resp = await fetch(`${API_BASE}/save_plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan,
+          mode: "update",
+          filename: window.currentPlanFile   // ✅ 用正確檔名
+        })
+      });
+      if (resp.ok) {
+        console.log("✅ 已更新:", window.currentPlanFile);
+      } else {
+        const result = await resp.json();
+        console.error("❌ 更新失敗:", result.detail || result);
+      }
+    } catch (e) {
+      console.error("❌ 更新錯誤:", e);
+    }
+  }
+    //
+    document.getElementById('chat-trigger').onclick = function() {
+      document.getElementById('chat-float').style.display = 'flex';
+    };
+    function closeChatFloat() {
+      document.getElementById('chat-float').style.display = 'none';
+    }
+    function toLocalYMD(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+    function fillPlanDates(plan, startdate) {
+      const d = new Date(startdate);
+      for (let i = 0; i < plan.length; i++) {
+       const weekStart = new Date(d);
+       const weekEnd = new Date(d);
+       weekEnd.setDate(weekEnd.getDate() + 6);
+
+        plan[i]["開始日期"] = toLocalYMD(weekStart);
+        plan[i]["結束日期"] = toLocalYMD(weekEnd);
+
+        d.setDate(d.getDate() + 7);   
+      }
+    }
+    function renderMessage(role, content, isTyping = false) {
+      const chatBox = document.getElementById("chat-box");
+      let rowClass = role === "user" ? "msg-user" : "msg-bot";
+      let bubbleClass = role === "user" ? "bubble-user" : "bubble-bot";
+      let avatarHtml = role === "user"
+        ? `<div class="user-avatar"><img src="/static/monkey-head.avif" alt="bot" style="width:32px;height:32px;object-fit:contain;border-radius:50%;" /></div>`
+        : `<div class="bot-avatar"><img src="/static/bot1.jpg" alt="bot" style="width:32px;height:32px;object-fit:contain;border-radius:50%;" /></div>`;
+      let msgHtml = "";
+
+      if (isTyping) {
+       msgHtml = `
+          <div class="chat-msg-row ${rowClass}">
+            ${role === "bot" ? avatarHtml : ""}
+          <div class="typing-bubble">
+             <span class="dot-flashing"></span>
+             <span class="dot-flashing"></span>
+             <span class="dot-flashing"></span>
+          </div>
+        ${role === "user" ? avatarHtml : ""}
+      </div>`;
+    } else {
+      msgHtml = `
+    <div class="chat-msg-row ${rowClass}">
+       ${role === "bot" ? avatarHtml : ""}
+    <div class="msg-bubble ${bubbleClass}">${content}</div>
+       ${role === "user" ? avatarHtml : ""}
+    </div>`;
+  }
+  chatBox.innerHTML += msgHtml;
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+    function removeTypingBubble() {
+      const chatBox = document.getElementById("chat-box");
+      const rows = chatBox.querySelectorAll('.chat-msg-row');
+      if (rows.length > 0 && rows[rows.length-1].querySelector('.typing-bubble')) {
+       rows[rows.length-1].remove();
+      }
+    }
+    function parseFullDate(str) {
+      if (!str) return null;
+        return new Date(str);
+    }
+    document.addEventListener('mousedown', function(event) {
+      const chatFloat = document.getElementById('chat-float');
+      const chatTrigger = document.getElementById('chat-trigger');
+      if (chatFloat.style.display === 'flex' && !chatFloat.contains(event.target) && !chatTrigger.contains(event.target)) {
+      chatFloat.style.display = 'none';
+      }
+    });
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const message = input.value;
+    if (!message) return;
+      renderMessage("user", message);      
+      input.value = "";
+      input.focus();
+
+      renderMessage("bot", "", true); 
+      
+    try {
+      const response = await fetch(`${API_BASE}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+         message,
+         plan: window.currentPlan || null
+      })
+    });
+        const text = await response.text();
+        let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      removeTypingBubble();
+      renderMessage("bot", "AI 回傳格式錯誤（不是JSON）："+text);
+      return;
+    }
+
+    removeTypingBubble();
+    let planModified = false;
+
+    if (data.plan) {
+      if (data.reply && /^已將第(\d+)週結束日改為 ([\d\-]+)/.test(data.reply)) {
+        const m = /^已將第(\d+)週結束日改為 ([\d\-]+)/.exec(data.reply);
+        if (m) {
+          const idx = parseInt(m[1], 10) - 1;
+          const endDate = m[2];
+          if (window.currentPlan && window.currentPlan[idx]) {
+            window.currentPlan[idx]["結束日期"] = endDate;
+            planModified = true;
+            const weekRanges = getWeekRanges(window.currentPlan[0]?.開始日期, window.currentPlan.length);
+            renderGantt(window.currentPlan, weekRanges, "gantt-original");
+          }
+        }
+        renderMessage("bot", data.reply);
+      } else {
+        window.currentPlan = typeof data.plan === "string" ? JSON.parse(data.plan) : data.plan;
+        planModified = true;
+        const weekRanges = getWeekRanges(window.currentPlan[0]?.開始日期, window.currentPlan.length);
+        renderGantt(window.currentPlan, weekRanges, "gantt-original");
+        renderMessage("bot", "已根據指示修改計畫！");
+      }
+
+      // 自動儲存新版計畫
+      if (planModified && window.currentPlan) {
+      // 先更新 localStorage
+        localStorage.setItem("latestPlan", JSON.stringify(window.currentPlan));
+        localStorage.setItem("latestPlanStartDate", window.currentPlan[0]?.開始日期);
+        updatePlan(window.currentPlan);
+      }
+    }
+
+    if (data.reply && (!data.plan || !/^已將第(\d+)週結束日改為/.test(data.reply))) {
+      renderMessage("bot", data.reply);
+    }
+  } catch (e) {
+    removeTypingBubble();
+    renderMessage("bot", "(發送失敗)");
+  }
+}
+
+   function handleKey(event) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
+    }
+  }
+  function quickInsertAndSend(text) {
+    const input = document.getElementById("userInput");
+    input.value = text;
+    sendMessage();
+  }
+
+    function getWeekRanges(startDate, weekCount) {
+      const ranges = [];
+      let current = new Date(startDate);
+      for (let i = 0; i < weekCount; i++) {
+        let end = new Date(current);
+        end.setDate(end.getDate() + 6); // 一周7天
+    ranges.push({
+      label: `${String(current.getMonth()+1).padStart(2,"0")}/${String(current.getDate()).padStart(2,"0")}–${String(end.getMonth()+1).padStart(2,"0")}/${String(end.getDate()).padStart(2,"0")}`,
+      start: new Date(current),
+      end: new Date(end)
+    });
+      current.setDate(current.getDate() + 7);
+    }
+      return ranges;
+    }
+
+    function showLoading(msg = "學習計畫生成中，請稍候...") {
+     document.getElementById("modalMsg").textContent = msg;
+     document.getElementById("modalOverlay").style.display = "block";
+    }
+    function hideLoading() {
+     document.getElementById("modalOverlay").style.display = "none";
+    }
+    function showAlertModal(msg) {
+     document.getElementById("alertModalMsg").textContent = msg;
+     document.getElementById("alertModal").classList.add("show");
+    }
+    function hideAlertModal() {
+     document.getElementById("alertModal").classList.remove("show");
+    }
+
+    // 甘特圖
+    function renderGantt(plan, weekRanges, containerId) {
+      if (!Array.isArray(plan) || plan.length === 0) {
+        document.getElementById(containerId).innerHTML = "<span>沒有資料</span>";
+        return;
+      }
+      const startDate = parseFullDate(plan[0].開始日期);
+      const totalDays = plan.length * 7 + 6; // 每週7天
+      const monthMap = {};
+
+  for (let i = 0; i < totalDays; i++) {
+       const d = new Date(startDate);
+       d.setDate(d.getDate() + i);
+       const month = d.getMonth();
+       const date = d.getDate();
+       const yearMonth = `${d.getFullYear()}-${month+1}`;
+    if (!monthMap[yearMonth]) monthMap[yearMonth] = [];
+       monthMap[yearMonth].push(date);
+      }
+
+      // 標題排頭
+      let html = '<table class="gantt-table">';
+      html += '<thead>';
+      html += `<tr><th class="week-col">週次</th>`;
+    for (const key in monthMap) {
+        html += `<th colspan="${monthMap[key].length}">${key.replace('-', '月')}</th>`;
+      }
+        html += '</tr>';
+
+    html += `<tr><th class="week-col"></th>`;
+    for (const key in monthMap) {
+        html += monthMap[key].map(day => `<th>${day}</th>`).join('');
+      }
+      html += '</tr>';
+      html += '</thead><tbody>';
+    for (let i = 0; i < plan.length; i++) {
+        const start = parseFullDate(plan[i].開始日期);
+        const end = parseFullDate(plan[i].結束日期);
+        const focus = plan[i].重點 || plan[i].content || "";
+        const tasks = plan[i].任務;
+
+        let detail = Array.isArray(tasks)
+          ? tasks.map((t, idx) => `${idx + 1}. ${t}`).join("\n")
+          : (typeof tasks === "string" ? tasks : "");
+
+         html += `<tr><td class="tooltip zh-horiz" data-tooltip="${plan[i].開始日期}～${plan[i].結束日期}">${i + 1}</td>`;
+
+        const barStart = new Date(startDate);
+        let emptyCells = Math.floor((start - barStart) / (1000 * 60 * 60 * 24));
+        let spanDays = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+    for (let j = 0; j < emptyCells; j++) html += '<td></td>';
+        html += `<td colspan="${spanDays}"><div class="gantt-bar tooltip">${focus}<span class="tooltiptext">${detail || "（無詳細任務）"}</span></div></td>`;
+        const totalCells = Object.values(monthMap).flat().length;
+    for (let j = emptyCells + spanDays; j < totalCells; j++) html += '<td></td>';
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      document.getElementById(containerId).innerHTML = html;
+    }
+
+    // 主流程
+    window.addEventListener("load", async () => { 
+      try {
+        const resp = await fetch(`${API_BASE}/latest_my_plan`);
+        const data = await resp.json();
+
+        if (data.plan && data.plan.length > 0) {
+          window.currentPlan = data.plan;
+          window.currentPlanFile = data.filename;   // ✅ 記住最新檔名
+
+          const weekRanges = getWeekRanges(window.currentPlan[0]?.開始日期, window.currentPlan.length);
+          renderGantt(window.currentPlan, weekRanges, "gantt-original");
+
+          document.getElementById("gantt-group").style.display = "block";
+          document.getElementById("chat-trigger").style.display = "block";
+
+          console.log("✅ 已載入最新計畫:", window.currentPlanFile);
+        } else {
+          document.getElementById("gantt-original").innerHTML = "⚠️ 沒有找到任何已儲存的學習計畫";
+        }
+      } catch (err) {
+        console.error("❌ 載入最新計畫錯誤:", err);
+        document.getElementById("gantt-original").innerHTML = "讀取失敗";
+      }
+    });
+  </script>
+</body>
+</html>

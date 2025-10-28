@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>SmartLearn 推薦計畫</title>
+  <script src="/static/config.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fff;
+    }
+    header {
+      padding: 12px 16px;
+      background: #fff;
+    }
+    header h1 {
+      margin: 0;
+      color: #333;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    .gantt-table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 900px;
+      background: #f8f8f8;
+    }
+    .gantt-table th,
+    .gantt-table td {
+      border: none;
+      padding: 8px;
+      text-align: center;
+      background: #f8f8f8;
+      overflow: visible; /* 浮出*/
+    }
+    /* 表頭 */
+    .gantt-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    /* 第一欄週次 */
+    .gantt-table th:first-child,
+    .gantt-table td:first-child {
+      position: sticky;
+      left: 0;
+      background: #f8f8f8;
+      z-index: 10;
+      font-weight: bold;
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    /* 甘特圖 bar */
+    .gantt-bar {
+      display: block;
+      background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+      color: #fff;
+      border-radius: 14px;
+      margin: 6px 0;
+      padding: 12px 8px;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      overflow: visible;
+    }
+    .tooltip {
+      position: relative;
+    }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      min-width: 250px;
+      background: #333;
+      color: #fff;
+      border-radius: 8px;
+      padding: 12px 16px;
+      position: absolute;
+      z-index: 100 !important; 
+      left: 50%;
+      top: 110%;
+      transform: translateX(-50%);
+      font-size: 15px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+      white-space: pre-line;
+      line-height: 1.6;
+      opacity: 0;
+      transition: opacity 0.18s;
+      pointer-events: none;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    .tooltip-right .tooltiptext {
+      top: 50%;
+      left: 105%;   /* 靠右側 */
+      transform: translateY(-50%);
+      min-width: 160px;
+      white-space: nowrap;
+    }
+    /* bar 專用、tooltip 顯示在下方 */
+    .tooltip-bottom .tooltiptext {
+      top: 110%;
+      left: 50%;
+      transform: translateX(-50%);
+      min-width: 250px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SmartLearn 推薦計畫</h1>
+  </header>
+
+  <main>
+    <div id="gantt-ai"></div>
+  </main>
+
+  <script>
+    function parseDate(str) {
+      return str ? new Date(str) : null;
+    }
+
+    function renderGantt(plan, containerId) {
+      if (!Array.isArray(plan) || plan.length === 0) {
+        document.getElementById(containerId).innerHTML = "<span>沒有資料</span>";
+        return;
+      }
+
+      const startDate = parseDate(plan[0].開始日期);
+      const totalDays = plan.length * 7 + 6;
+      const monthMap = {};
+
+      for (let i = 0; i < totalDays; i++) {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + i);
+        const ym = `${d.getFullYear()}月${d.getMonth() + 1}`;
+        if (!monthMap[ym]) monthMap[ym] = [];
+        monthMap[ym].push(d.getDate());
+      }
+
+      let html = '<table class="gantt-table"><thead>';
+      html += '<tr><th>週次</th>';
+      for (const k in monthMap) html += `<th colspan="${monthMap[k].length}">${k}</th>`;
+      html += '</tr><tr><th></th>';
+      for (const k in monthMap) html += monthMap[k].map(d => `<th>${d}</th>`).join('');
+      html += '</tr></thead><tbody>';
+
+      for (let i = 0; i < plan.length; i++) {
+        const start = parseDate(plan[i].開始日期);
+        const end = parseDate(plan[i].結束日期);
+        const focus = plan[i].重點 || "";
+        const tasks = plan[i].任務;
+        const detail = Array.isArray(tasks)
+          ? tasks.map((t, idx) => `${idx + 1}. ${t}`).join("\n")
+          : (tasks || "");
+
+        html += `<tr><td class="tooltip tooltip-right">${i + 1}<span class="tooltiptext">${plan[i].開始日期}～${plan[i].結束日期}</span></td>`;
+
+        const barStart = new Date(startDate);
+        const emptyCells = Math.floor((start - barStart) / 86400000);
+        const spanDays  = Math.floor((end - start) / 86400000) + 1;
+
+        for (let j = 0; j < emptyCells; j++) html += '<td></td>';
+        html += `<td colspan="${spanDays}">
+                   <div class="gantt-bar tooltip">
+                     ${focus}
+                     <span class="tooltiptext">${detail || "（無詳細任務）"}</span>
+                   </div>
+                 </td>`;
+
+        const totalCells = Object.values(monthMap).flat().length;
+        for (let j = emptyCells + spanDays; j < totalCells; j++) html += '<td></td>';
+        html += '</tr>';
+      }
+
+      html += '</tbody></table>';
+      document.getElementById(containerId).innerHTML = html;
+    }
+
+    async function loadLatestAIPlan() {
+      try {
+        const resp = await fetch(`${API_BASE}/latest_ai_plan`);
+        if (!resp.ok) {
+          document.getElementById("gantt-ai").innerHTML = "載入失敗";
+          return;
+        }
+        const data = await resp.json();
+        renderGantt(data.plan || [], "gantt-ai");
+      } catch {
+        document.getElementById("gantt-ai").innerHTML = "載入錯誤";
+      }
+    }
+
+    loadLatestAIPlan();
+  </script>
+</body>
+</html>

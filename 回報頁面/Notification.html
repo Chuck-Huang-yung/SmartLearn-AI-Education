@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>問題回報</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-100 flex items-center justify-center h-screen relative">
+    <div
+      class="absolute top-4 left-6 flex items-center space-x-2 cursor-pointer"
+      onclick="window.location.href='/main_ui'"
+    >
+      <span class="text-blue-600 font-semibold text-lg">SmartLearn</span>
+    </div>
+    <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
+      <h2 class="text-2xl font-bold mb-4 text-center">問題回報</h2>
+
+      <form id="reportForm" class="space-y-4">
+        <div>
+          <label class="block text-gray-700">使用者 UID：</label>
+          <input
+            id="uid"
+            type="text"
+            readonly
+            class="w-full border rounded p-2 bg-gray-100"
+          />
+        </div>
+
+        <div>
+          <label class="block text-gray-700">問題描述：</label>
+          <textarea
+            id="message"
+            rows="5"
+            placeholder="請描述您遇到的問題..."
+            class="w-full border rounded p-2"
+            required
+          ></textarea>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+        >
+          送出回報
+        </button>
+      </form>
+
+      <p id="status" class="text-center mt-4 text-sm text-gray-600"></p>
+    </div>
+
+    <script src="/回報頁面/Notification.js"></script>
+  </body>
+</html>

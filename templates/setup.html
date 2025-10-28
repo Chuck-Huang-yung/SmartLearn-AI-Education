@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartLearn - 初始設定</title>
+    <!-- Tailwind CDN（最簡單） -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="color-scheme" content="light dark" />
+  </head>
+  <body class="min-h-screen bg-gray-50">
+    <!-- 頂部導覽 -->
+    <header class="bg-white border-b">
+      <div
+        class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-blue-600"></div>
+          <span class="text-lg font-semibold">SmartLearn</span>
+        </div>
+        <span class="text-sm text-gray-500">初始設定</span>
+      </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-8 grid lg:grid-cols-2 gap-8">
+      <!-- 設定表單 -->
+      <section class="bg-white rounded-2xl shadow-sm p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-1">
+          先完成您的基本設定
+        </h1>
+        <p class="text-gray-500 mb-6">之後可在「個人資料」再次修改。</p>
+
+        <!-- 頭像上傳 -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >頭像</label
+          >
+          <div class="flex items-center gap-4">
+            <!-- 預覽框 -->
+            <div
+              id="avatarPreview"
+              class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white flex items-center justify-center text-2xl font-bold overflow-hidden select-none"
+            >
+              <span id="avatarInitial">U</span>
+              <img
+                id="avatarImg"
+                alt="avatar preview"
+                class="hidden w-full h-full object-cover"
+              />
+            </div>
+
+            <div class="flex-1">
+              <label
+                for="avatarInput"
+                class="inline-flex items-center px-3 py-2 rounded-xl border text-sm font-medium bg-white hover:bg-gray-50 cursor-pointer"
+              >
+                選擇圖片
+              </label>
+              <input
+                id="avatarInput"
+                type="file"
+                accept="image/*"
+                class="sr-only"
+              />
+              <button
+                type="button"
+                id="removeAvatarBtn"
+                class="ml-2 text-sm text-gray-500 hover:text-gray-700"
+              >
+                移除頭像
+              </button>
+              <p class="text-xs text-gray-400 mt-2">
+                建議 512×512 以上，5MB 以下，JPG/PNG。
+              </p>
+              <p id="avatarError" class="text-xs text-red-600 mt-1 hidden"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 使用者名稱 -->
+        <div class="mb-6">
+          <label
+            for="displayName"
+            class="block text-sm font-medium text-gray-700 mb-2"
+            >顯示名稱</label
+          >
+          <input
+            id="displayName"
+            name="displayName"
+            type="text"
+            autocomplete="off"
+            required
+            placeholder="例如：小王、Jack、王小明"
+            class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 placeholder:text-gray-400"
+          />
+          <p id="nameError" class="text-xs text-red-600 mt-1 hidden"></p>
+        </div>
+
+        <!-- 學習階段 -->
+        <div class="mb-8">
+          <label
+            for="stage"
+            class="block text-sm font-medium text-gray-700 mb-2"
+            >學習階段</label
+          >
+          <select
+            id="stage"
+            name="stage"
+            class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+          >
+            <option value="" disabled selected>請選擇您的學習階段</option>
+            <option value="elementary">國小</option>
+            <option value="junior_high">國中</option>
+            <option value="senior_high">高中 / 高職</option>
+            <option value="undergrad">大學</option>
+            <option value="postgrad">研究生</option>
+            <option value="adult">社會人士</option>
+          </select>
+          <p id="stageError" class="text-xs text-red-600 mt-1 hidden"></p>
+        </div>
+
+        <!-- 操作按鈕 -->
+        <div class="flex items-center justify-end gap-3">
+          <button
+            id="skipBtn"
+            type="button"
+            class="px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100"
+          >
+            之後再設定
+          </button>
+          <button
+            id="saveBtn"
+            type="button"
+            class="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700"
+          >
+            儲存並開始使用
+          </button>
+        </div>
+      </section>
+
+      <!-- 右側即時預覽卡 -->
+      <aside class="bg-white rounded-2xl shadow-sm p-6">
+        <h2 class="text-lg font-semibold mb-4 text-gray-900">即時預覽</h2>
+        <div class="border rounded-2xl p-5">
+          <div class="flex items-center gap-4">
+            <div
+              id="previewAvatar"
+              class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white flex items-center justify-center text-xl font-bold overflow-hidden"
+            >
+              <span id="previewInitial">U</span>
+              <img
+                id="previewImg"
+                alt="avatar preview"
+                class="hidden w-full h-full object-cover"
+              />
+            </div>
+            <div>
+              <div class="text-base text-gray-500">顯示名稱</div>
+              <div id="previewName" class="text-xl font-semibold text-gray-900">
+                使用者
+              </div>
+              <div id="previewStage" class="text-sm text-gray-500 mt-1">
+                尚未選擇階段
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-5" />
+
+          <div class="space-y-2 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-gray-500">學習連續天數</span>
+              <span class="font-medium">0 天</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-500">目前階段</span>
+              <span
+                id="previewStageTag"
+                class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs bg-gray-100 text-gray-700"
+              >
+                未設定
+              </span>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-gray-400 mt-4">預覽會隨著您的輸入即時更新。</p>
+      </aside>
+    </main>
+
+    <script>
+      // === 元件查找 ===
+      const displayName = document.getElementById("displayName");
+      const stage = document.getElementById("stage");
+      const nameError = document.getElementById("nameError");
+      const stageError = document.getElementById("stageError");
+
+      const avatarInput = document.getElementById("avatarInput");
+      const avatarImg = document.getElementById("avatarImg");
+      const avatarInitial = document.getElementById("avatarInitial");
+      const avatarError = document.getElementById("avatarError");
+      const removeAvatarBtn = document.getElementById("removeAvatarBtn");
+
+      const previewImg = document.getElementById("previewImg");
+      const previewInitial = document.getElementById("previewInitial");
+      const previewName = document.getElementById("previewName");
+      const previewStage = document.getElementById("previewStage");
+      const previewStageTag = document.getElementById("previewStageTag");
+
+      const saveBtn = document.getElementById("saveBtn");
+      const skipBtn = document.getElementById("skipBtn");
+
+      // === 工具 ===
+      const STAGE_MAP = {
+        elementary: "國小",
+        junior_high: "國中",
+        senior_high: "高中 / 高職",
+        undergrad: "大學",
+        postgrad: "研究生",
+        adult: "社會人士",
+      };
+
+      function setInitialByName(name) {
+        const initial = (name?.trim()?.[0] || "U").toUpperCase();
+        avatarInitial.textContent = initial;
+        previewInitial.textContent = initial;
+      }
+
+      function updatePreview() {
+        const name = displayName.value.trim();
+        previewName.textContent = name || "使用者";
+        setInitialByName(name || "U");
+
+        const stageVal = stage.value;
+        if (stageVal) {
+          previewStage.textContent = STAGE_MAP[stageVal];
+          previewStageTag.textContent = STAGE_MAP[stageVal];
+          previewStageTag.className =
+            "inline-flex items-center px-2 py-0.5 rounded-lg text-xs bg-blue-50 text-blue-700";
+        } else {
+          previewStage.textContent = "尚未選擇階段";
+          previewStageTag.textContent = "未設定";
+          previewStageTag.className =
+            "inline-flex items-center px-2 py-0.5 rounded-lg text-xs bg-gray-100 text-gray-700";
+        }
+      }
+
+      function clearAvatar(showInitial = true) {
+        avatarImg.src = "";
+        avatarImg.classList.add("hidden");
+        previewImg.src = "";
+        previewImg.classList.add("hidden");
+        if (showInitial) {
+          avatarInitial.classList.remove("hidden");
+          previewInitial.classList.remove("hidden");
+        }
+      }
+
+      // === 即時預覽 ===
+      displayName.addEventListener("input", updatePreview);
+      stage.addEventListener("change", updatePreview);
+
+      avatarInput.addEventListener("change", (e) => {
+        const file = e.target.files?.[0];
+        avatarError.classList.add("hidden");
+        avatarError.textContent = "";
+
+        if (!file) {
+          clearAvatar(true);
+          return;
+        }
+
+        const isImage = /^image\//.test(file.type);
+        const isOkSize = file.size <= 5 * 1024 * 1024;
+        if (!isImage || !isOkSize) {
+          avatarError.textContent = !isImage
+            ? "僅支援圖片格式"
+            : "圖片需小於 5MB";
+          avatarError.classList.remove("hidden");
+          avatarInput.value = "";
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const dataUrl = evt.target.result;
+          avatarImg.src = dataUrl;
+          avatarImg.classList.remove("hidden");
+          avatarInitial.classList.add("hidden");
+
+          previewImg.src = dataUrl;
+          previewImg.classList.remove("hidden");
+          previewInitial.classList.add("hidden");
+        };
+        reader.readAsDataURL(file);
+      });
+
+      removeAvatarBtn.addEventListener("click", () => {
+        avatarInput.value = "";
+        clearAvatar(true);
+      });
+
+      // === 驗證 ===
+      function validate() {
+        let ok = true;
+        nameError.classList.add("hidden");
+        nameError.textContent = "";
+        stageError.classList.add("hidden");
+        stageError.textContent = "";
+
+        if (!displayName.value.trim()) {
+          nameError.textContent = "請輸入顯示名稱。";
+          nameError.classList.remove("hidden");
+          ok = false;
+        }
+        if (!stage.value) {
+          stageError.textContent = "請選擇學習階段。";
+          stageError.classList.remove("hidden");
+          ok = false;
+        }
+        return ok;
+      }
+
+      // === API: 上傳頭像 ===
+      async function uploadAvatar(file) {
+        const formData = new FormData();
+        formData.append("avatar", file);
+
+        const res = await fetch("/api/upload_avatar", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || "頭像上傳失敗");
+        }
+        const data = await res.json();
+        return data.path; // 例如 /static/avatars/xxxx.png
+      }
+
+      // === API: 更新個人資料 ===
+      async function updateProfile(payload) {
+        const res = await fetch("/api/update_profile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "更新失敗");
+        return data;
+      }
+
+      // === 儲存 ===
+      saveBtn.addEventListener("click", async () => {
+        if (!validate()) return;
+        const currentUser = localStorage.getItem("signup_currentUser");
+        if (!currentUser) {
+          alert("找不到使用者帳號，請重新登入");
+          return;
+        }
+
+        try {
+          let avatarPath = null;
+          const file = avatarInput.files?.[0];
+          if (file) {
+            avatarPath = await uploadAvatar(file); // 先上傳，取得檔案路徑
+          }
+
+          await updateProfile({
+            currentUser,
+            displayName: displayName.value.trim(),
+            stage: stage.value,
+            avatar: avatarPath,
+          });
+
+          localStorage.setItem(
+            "smartlearn_profile",
+            JSON.stringify({
+              name: displayName.value.trim(),
+              stage: stage.value,
+              avatar: avatarPath,
+            })
+          );
+
+          window.location.href = "/interests_ui";
+        } catch (err) {
+          alert("更新失敗：" + err.message);
+        }
+      });
+
+      // === 跳過 ===
+      skipBtn.addEventListener("click", async () => {
+        const currentUser = localStorage.getItem("signup_currentUser");
+        if (!currentUser) {
+          alert("找不到使用者帳號，請重新登入");
+          return;
+        }
+        await updateProfile({
+          currentUser,
+          displayName: "使用者",
+          stage: "adult",
+          avatar: null,
+        });
+        localStorage.setItem(
+          "smartlearn_profile",
+          JSON.stringify({
+            name: "使用者",
+            stage: "adult",
+            avatar: null,
+          })
+        );
+        window.location.href = "/interests_ui";
+      });
+
+      // === 初始化 ===
+      (function init() {
+        displayName.value = "";
+        updatePreview();
+      })();
+    </script>
+  </body>
+</html>

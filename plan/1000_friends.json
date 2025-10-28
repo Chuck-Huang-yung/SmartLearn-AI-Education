@@ -1,0 +1,64 @@
+{
+  "friends": [
+    {
+      "id": 1,
+      "uid": "1001",
+      "name": "小明",
+      "status": "online",
+      "avatar": "👦",
+      "statusText": "線上",
+      "lastMsg": "你好",
+      "time": "2025-09-03 15:27:39",
+      "unread": 0,
+      "bio": "這個人很神秘，還沒有填寫自我介紹"
+    },
+    {
+      "id": 2,
+      "uid": "1002",
+      "name": "小美",
+      "status": "online",
+      "avatar": "👧",
+      "statusText": "線上",
+      "lastMsg": "是你!",
+      "time": "2025-09-02 15:12:39",
+      "unread": 0,
+      "bio": "正在學習日文"
+    },
+    {
+      "id": 3,
+      "uid": "1003",
+      "name": "阿華",
+      "status": "offline",
+      "avatar": "👨",
+      "statusText": "離線",
+      "lastMsg": "你是誰?",
+      "time": "2025-09-01 11:22:39",
+      "unread": 0,
+      "bio": "數學苦手要加油！"
+    },
+    {
+      "id": 4,
+      "uid": "1004",
+      "name": "小花",
+      "status": "online",
+      "avatar": "👩",
+      "statusText": "線上",
+      "lastMsg": "好",
+      "time": "2025-09-03 17:24:41",
+      "unread": 0,
+      "bio": "愛畫畫，準備考設計系"
+    },
+    {
+      "id": 5,
+      "uid": "1005",
+      "name": "大雄",
+      "status": "offline",
+      "avatar": "👦",
+      "statusText": "離線",
+      "lastMsg": "嗨",
+      "time": "2025-09-05 15:23:40",
+      "unread": 0,
+      "bio": "希望下次考試能進步 20 分"
+    }
+  ]
+}
