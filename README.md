@@ -40,14 +40,17 @@
 
 ```text
 SmartLearn/
-├── frontend/                 # React + TypeScript 前端應用程式
-│   ├── src/
-│   │   ├── components/       # 高重用性 UI 組件 (儀表板, 甘特圖, 日曆)
-│   │   ├── hooks/            # 自定義 React Hooks (狀態管理, API 請求)
-│   │   ├── services/         # 外部 API 封裝 (Gemini API 串接邏輯)
-│   │   └── types/            # TypeScript 型別定義 (課程, 測驗, 使用者)
-│   └── tailwind.config.js    # 樣式與主題設定
-├── backend/                  # Node.js 輕量化中繼層 (預留擴充)
-│   ├── routes/               # API 路由控制
-│   └── controllers/          # 學習數據存取與業務邏輯
-└── docs/                     # 系統企劃書與 UI/UX 設計稿
+├── app/                    核心應用程式邏輯
+├── assets/                 專案靜態資源與圖片
+├── js/                     前端 JavaScript 互動腳本
+├── plan/                   專案企劃與時程規劃文件
+├── src/                    原始程式碼與核心模組
+├── static/                 CSS 與全域樣式檔
+├── templates/              HTML 網頁模板
+├── 主頁頁面/                系統首頁與儀表板介面
+├── 介紹頁面/                平台功能導覽與說明
+├── 個人資訊/                使用者檔案與學習歷程管理
+├── 回報頁面/                使用者意見回饋與 Bug 回報機制
+├── 登入註冊/                會員認證與帳號管理模組
+├── requirements.txt        Python 依賴套件清單
+└── README.md               專案說明文件
