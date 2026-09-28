@@ -23,15 +23,6 @@
 
 ---
 
-## 🛠️ 技術棧 (Tech Stack)
-
-* **前端與介面 (Frontend)：** React, HTML5, CSS3, Figma (UI/UX 規劃)
-* **後端與資料庫 (Backend & Database)：** Node.js, Express, PostgreSQL
-* **AI 應用與串接 (AI Integration)：** Google Gemini API (適性化學習排程運算)
-* **專案管理與版控 (DevOps & PM)：** Azure DevOps (敏捷式開發管理), Git
-
----
-
 ## ✨ 核心業務邏輯與 AI 技術深度 (Technical Highlights)
 
 本系統不只是單純的 API 串接，更著重於學習行為的數據化與適性化推薦邏輯：
@@ -51,6 +42,15 @@
 ### 4. 預留生態系擴充：社群與教師端 (Ecosystem Scalability)
 * **社群共學文化：** 系統底層架構支援筆記共享與匿名討論房機制。AI 能自動媒合並精選完整度高的筆記推薦給學弟妹，建立正向的學術社群循環。
 * **數據驅動教學 (Teacher Dashboard)：** 系統 API 預留教師端擴充接口。未來教授可透過後台即時監控全班的學習軌跡、測驗答對率分佈，精準找出學生的「學習盲點」並動態派發作業，實現教與學的雙向數據回饋。
+
+---
+
+## 🛠️ 技術棧 (Tech Stack)
+
+* **前端與介面 (Frontend)：** React, HTML5, CSS3, Figma (UI/UX 規劃)
+* **後端與資料庫 (Backend & Database)：** Node.js, Express, PostgreSQL
+* **AI 應用與串接 (AI Integration)：** Google Gemini API (適性化學習排程運算)
+* **專案管理與版控 (DevOps & PM)：** Azure DevOps (敏捷式開發管理), Git
 
 ---
 
