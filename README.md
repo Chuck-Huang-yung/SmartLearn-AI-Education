@@ -23,6 +23,15 @@
 
 ---
 
+## 🛠️ 技術棧 (Tech Stack)
+
+* **前端與介面 (Frontend)：** React, HTML5, CSS3, Figma (UI/UX 規劃)
+* **後端與資料庫 (Backend & Database)：** Node.js, Express, PostgreSQL
+* **AI 應用與串接 (AI Integration)：** Google Gemini API (適性化學習排程運算)
+* **專案管理與版控 (DevOps & PM)：** Azure DevOps (敏捷式開發管理), Git
+
+---
+
 ## ✨ 核心業務邏輯與 AI 技術深度 (Technical Highlights)
 
 本系統不只是單純的 API 串接，更著重於學習行為的數據化與適性化推薦邏輯：
