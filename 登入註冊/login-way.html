@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartLearn 登入</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="login-container">
+      <h1 id="Topic">SmartLearn</h1>
+      <form id="loginForm">
+        <input type="text" id="username" placeholder="電子郵件" required />
+        <input type="password" id="password" placeholder="密碼" required />
+        <button type="submit">登入</button>
+        <div class="line"></div>
+      </form>
+
+      <div class="social-login">
+        <button class="google-btn" aria-label="使用 Google 登入">
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+            alt="Google Logo"
+          />
+        </button>
+        <div class="or-text">or</div>
+        <button class="facebook-btn" aria-label="使用 Facebook 登入">
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_(2019).png/512px-Facebook_Logo_(2019).png"
+            alt="Facebook Logo"
+          />
+        </button>
+      </div>
+    </div>
+
+    <script src="login.js"></script>
+  </body>
+</html>
