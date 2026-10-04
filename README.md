@@ -23,6 +23,13 @@
 
 ---
 
+## 📊 敏捷式開發 (Azure DevOps) 工作清單畫面 
+<a href="https://github.com/user-attachments/assets/5bc99646-c5ae-4bd3-b67d-9c457dbef340" target="_blank">
+  <img width="1560" height="1008" alt="image" src="https://github.com/user-attachments/assets/0a6b7c44-591f-4db8-8c18-020ea5be56d9" />
+</a>
+
+---
+
 ## ✨ 核心業務邏輯與 AI 技術深度 (Technical Highlights)
 
 本系統不只是單純的 API 串接，更著重於學習行為的數據化與適性化推薦邏輯：
@@ -72,11 +79,3 @@ SmartLearn/
 ├── 登入註冊/                會員認證與帳號管理模組
 ├── requirements.txt        Python 依賴套件清單
 └── README.md               專案說明文件
-```
-
----
-
-## 📊 敏捷式開發 (Azure DevOps) 工作清單畫面 
-<a href="https://github.com/user-attachments/assets/5bc99646-c5ae-4bd3-b67d-9c457dbef340" target="_blank">
-  <img width="1560" height="1008" alt="image" src="https://github.com/user-attachments/assets/0a6b7c44-591f-4db8-8c18-020ea5be56d9" />
-</a>
