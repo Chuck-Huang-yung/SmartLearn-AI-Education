@@ -36,8 +36,8 @@
 * **防呆與督促機制：** 結合手機或 Email 推播，於特定時間提醒學習進度，並能根據使用者的「偷懶」或「臨時有事」指令，自動重新演算並重構後續的進度模板。
 
 ### 3. 前端開發與互動設計 (Frontend Development & UI Design)
-* **敏捷與模組化開發：** 捨棄大型框架的包袱，運用 **JavaScript** 進行高效的動態 DOM 操作。作為小專案，打造輕量且易於迭代的前端架構，完美契合概念驗證 (PoC) 階段的敏捷開發需求。
-* **數據視覺化與體驗優化：** 導入 **Tailwind CSS** 實現流暢的響應式介面 (RWD)，將複雜的學習數據轉化為直覺的「動態甘特圖」與「視覺化排程儀表板」，大幅降低使用者的認知負荷。
+* **敏捷與模組化開發：** 捨棄大型框架的包袱，運用 JavaScript 進行高效的動態 DOM 操作。作為小專案，打造輕量且易於迭代的前端架構，完美契合概念驗證 (PoC) 階段的敏捷開發需求。
+* **數據視覺化與體驗優化：** 導入 Tailwind CSS 實現流暢的響應式介面 (RWD)，將複雜的學習數據轉化為直覺的「動態甘特圖」與「視覺化排程儀表板」，大幅降低使用者的認知負荷。
 
 ### 4. 預留生態系擴充：社群與教師端 (Ecosystem Scalability)
 * **社群共學文化：** 系統底層架構支援筆記共享與匿名討論房機制。AI 能自動媒合並精選完整度高的筆記推薦給學弟妹，建立正向的學術社群循環。
@@ -72,3 +72,10 @@ SmartLearn/
 ├── 登入註冊/                會員認證與帳號管理模組
 ├── requirements.txt        Python 依賴套件清單
 └── README.md               專案說明文件
+
+---
+
+## 📊 敏捷式開發 (Azure DevOps) 工作清單畫面 
+<a href="https://github.com/user-attachments/assets/5bc99646-c5ae-4bd3-b67d-9c457dbef340" target="_blank">
+  <img width="1560" height="1008" alt="image" src="https://github.com/user-attachments/assets/0a6b7c44-591f-4db8-8c18-020ea5be56d9" />
+</a>
