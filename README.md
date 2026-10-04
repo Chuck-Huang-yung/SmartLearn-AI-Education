@@ -15,7 +15,7 @@
 ---
 
 ## ⚡開發角色與核心貢獻 (Role & Contribution)
- * **團隊規模：** 6 人產學專題團隊
+ * **團隊規模：** 6 人專題團隊
  * **我的核心負責項目：前後端開發連接與 AI 串接**
    * 負責 Python 網頁模組化架構設計（MVC/Flask）。
    * 串接 Google Gemini API 實現筆記分析、錯題解析與適性化排程演算法。
@@ -24,8 +24,8 @@
 ---
 
 ## 📊 敏捷式開發 (Azure DevOps) 工作清單畫面 
-<a href="https://github.com/user-attachments/assets/0a6b7c44-591f-4db8-8c18-020ea5be56d9" target="_blank">
-  <img width="1560" height="1008" alt="image" src="https://github.com/user-attachments/assets/0a6b7c44-591f-4db8-8c18-020ea5be56d9" />
+<a href="https://github.com/user-attachments/assets/22e38dbb-f6c1-4d45-ba18-1f576927a2ce" target="_blank">
+  <img width="1560" height="1008" alt="image" src="https://github.com/user-attachments/assets/22e38dbb-f6c1-4d45-ba18-1f576927a2ce" />
 </a>
 
 ---
