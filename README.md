@@ -45,6 +45,15 @@
 
 ---
 
+## 🛠️ 技術棧 (Tech Stack)
+
+* **前端與介面 (Frontend)：** JavaScript, HTML5, Tailwind CSS, Figma (UI/UX 規劃)
+* **後端與資料庫 (Backend & Database)：** Python, FastAPI, PostgreSQL
+* **AI 應用與串接 (AI Integration)：** Google Gemini API (適性化學習排程運算)
+* **專案管理與版控 (DevOps & PM)：** Azure DevOps (敏捷式開發管理), Git
+
+---
+
 ## 📂 專案目錄結構 (Project Structure)
 
 ```text
