@@ -72,6 +72,7 @@ SmartLearn/
 ├── 登入註冊/                會員認證與帳號管理模組
 ├── requirements.txt        Python 依賴套件清單
 └── README.md               專案說明文件
+```
 
 ---
 
